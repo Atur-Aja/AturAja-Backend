@@ -26,7 +26,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'phone_number' => 'required|min:10',
             'password' => 'required|min:6|same:password_validate',
-            'password_validate' => 'min:8',
+            'password_validate' => 'min:10',
         ]);
 
         try {
