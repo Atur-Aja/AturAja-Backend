@@ -22,7 +22,7 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $this->validate($request, [
-            'user_name' => 'required|string|unique:users',
+            'username' => 'required|string|unique:users',
             'email' => 'required|email',
             'password' => 'required|min:8',
             'phone_number' => 'required|min:10',
@@ -30,8 +30,8 @@ class AuthController extends Controller
 
         try {
             $user = User::create([
-                'user_name' => $request->user_name,
-                'display_name' => $request->user_name,
+                'username' => $request->username,
+                'display_name' => $request->username,
                 'email' => $request->email,
                 'password' => app('hash')->make($request->password),
                 'phone_number' => $request->phone_number
