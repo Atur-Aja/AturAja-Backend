@@ -9,6 +9,24 @@ use App\Task;
 
 class TaskController extends Controller
 {
+    public function getAll()
+    {
+        $task = Task::get()->toJson(JSON_PRETTY_PRINT);
+        return response($task, 200);
+    }
+
+    public function getById($id)
+    {
+        if (Task::where('id', $id)->exists()) {
+            $task = Task::where('id', $id)->get()->toJson(JSON_PRETTY_PRINT);
+            return response($task, 200);
+        } else {
+            return response()->json([
+              "message" => "task not found"
+            ], 404);
+          }
+    }
+    
     public function create(Request $request)
     {
         $this->validate($request, [

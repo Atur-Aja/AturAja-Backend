@@ -27,6 +27,8 @@ Route::group(['prefix' => 'auth'], function ($router) {
 Route::get('/user', 'AuthController@user');
 
 Route::group(['prefix' => 'task'], function ($router) {
+    Route::get('', 'TaskController@getAll')->middleware('jwt.verify');
+    Route::get('{id}', 'TaskController@getById')->middleware('jwt.verify');
     Route::post('', 'TaskController@create')->middleware('jwt.verify');
     Route::put('/{id}', 'TaskController@update')->middleware('jwt.verify');
     Route::delete('/{id}', 'TaskController@delete')->middleware('jwt.verify');
