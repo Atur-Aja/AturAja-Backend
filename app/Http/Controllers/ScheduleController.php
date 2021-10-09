@@ -56,7 +56,13 @@ class ScheduleController extends Controller
      */
     public function show($id)
     {
-        //
+        // if (Schedule::where('id', $id)->exists()) {
+        //     $schedule = Schedule::where('id', $id)->get()->toJson(JSON_PRETTY_PRINT);
+        //     return response($schedule, 200);
+        // } else {
+        //     response()->json(['message' => 'schedule not found'], 404);
+        // }
+        return Schedule::find($id);
     }
 
     /**
@@ -68,7 +74,26 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+        // Validate Request
+        $this->ValidateRequest();
+
+        if (Schedule::where('id', $id)->exists()) {
+            $schedule = Schedule::find($id);
+
+            // Update Schedule
+            $schedule->update([
+                'title'=>request('title'),
+                'description'=>request('description'),
+                'location'=>request('location'),
+                'start_time'=>request('start_time'),
+                'end_time'=>request('end_time'),
+                'notification'=>request('notification'),
+                'repeat'=>request('repeat')
+            ]);
+            return response()->json(['message' => 'schedule updated successfully'], 200);
+        } else {
+            response()->json(['message' => 'schedule not found'], 404);
+        }
     }
 
     /**
@@ -79,7 +104,14 @@ class ScheduleController extends Controller
      */
     public function destroy($id)
     {
-        //
+        if(Schedule::where('id', $id)->exists()) {
+            $schedule = Schedule::find($id);
+            $schedule->delete();
+    
+            return response()->json(['message' => 'schedule deleted successfully'], 202);
+          } else {
+            response()->json(['message' => 'schedule not found'], 404);
+          }
     }
 
     private function ValidateRequest()
@@ -99,7 +131,7 @@ class ScheduleController extends Controller
     private function getAuthUser()
     {
         try{
-            return $user = auth()->userOrFail();
+            return $user = auth('api')->userOrFail();
         }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
             response()->json(['message' => 'not authenticated, please login first'])->send();
             exit;

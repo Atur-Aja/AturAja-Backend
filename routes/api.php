@@ -28,9 +28,11 @@ Route::group(['prefix' => 'auth'], function ($router) {
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('', 'AuthController@user');
-    Route::get('/user/{username}', 'UserController@');
+    Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
 });
 
-Route::group(['prefix' => 'schedules'], function ($router) {    
-    Route::apiResource('', 'ScheduleController');
-});
+Route::apiResource('schedules', 'ScheduleController');
+
+// Route::group(['prefix' => 'schedules'], function ($router) {    
+//     Route::apiResource('', 'ScheduleController');
+// });
