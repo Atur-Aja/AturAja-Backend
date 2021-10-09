@@ -19,9 +19,18 @@ Route::get('/', function () {
     return response()->json();
 });
 
+Route::get('/cektoken', 'AuthController@checktoken');
+
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('login', 'AuthController@login');
     Route::post('register', 'AuthController@register');
 });
 
-Route::get('/user', 'AuthController@user');
+Route::group(['prefix' => 'user'], function ($router) {
+    Route::get('', 'AuthController@user');
+    Route::get('/user/{username}', 'UserController@');
+});
+
+Route::group(['prefix' => 'schedules'], function ($router) {    
+    Route::apiResource('', 'ScheduleController');
+});

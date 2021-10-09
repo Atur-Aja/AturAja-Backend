@@ -16,12 +16,12 @@ class CreateSchedulesTable extends Migration
         Schema::create('schedules', function (Blueprint $table) {
             $table->id();
             $table->string('title');
-            $table->string('description');
-            $table->string('location');
+            $table->string('description')->nullable();
+            $table->string('location')->nullable();
             $table->dateTime('start_time', 0);
             $table->dateTime('end_time', 0);
-            $table->string('notification');
-            $table->string('repeat');
+            $table->string('notification')->nullable();
+            $table->string('repeat')->nullable();
             $table->timestamps();            
         });
     }
