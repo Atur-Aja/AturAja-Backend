@@ -10,6 +10,6 @@ class Schedule extends Model
 
     public function users()
     {
-        return $this->belongsToMany(User::class, 'meetings');
+        return $this->belongsTo(User::class);
     }
 }

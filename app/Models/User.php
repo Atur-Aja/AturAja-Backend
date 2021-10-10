@@ -60,6 +60,6 @@ class User extends Authenticatable implements JWTSubject
 
     public function schedules()
     {
-        return $this->belongsToMany(Schedule::class, 'meetings');
+        return $this->hasMany(Schedule::class);
     }
 }

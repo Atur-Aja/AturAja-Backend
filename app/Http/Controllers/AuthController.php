@@ -41,7 +41,7 @@ class AuthController extends Controller
             return response()->json([
                 'code' => 201,
                 'message' => 'Success',
-                'description' => 'User Success create Account'
+                'description' => 'User successfully created'
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

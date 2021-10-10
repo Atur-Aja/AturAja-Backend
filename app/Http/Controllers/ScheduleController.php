@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
+use App\Models\User;
 use App\Models\Schedule;
 
 class ScheduleController extends Controller
@@ -56,13 +57,7 @@ class ScheduleController extends Controller
      */
     public function show($id)
     {
-        // if (Schedule::where('id', $id)->exists()) {
-        //     $schedule = Schedule::where('id', $id)->get()->toJson(JSON_PRETTY_PRINT);
-        //     return response($schedule, 200);
-        // } else {
-        //     response()->json(['message' => 'schedule not found'], 404);
-        // }
-        return Schedule::find($id);
+        return Schedule::findOrFail($id);
     }
 
     /**
@@ -77,23 +72,26 @@ class ScheduleController extends Controller
         // Validate Request
         $this->ValidateRequest();
 
-        if (Schedule::where('id', $id)->exists()) {
-            $schedule = Schedule::find($id);
+        // Get Auth User
+        $user = $this->getAuthUser();
 
-            // Update Schedule
-            $schedule->update([
-                'title'=>request('title'),
-                'description'=>request('description'),
-                'location'=>request('location'),
-                'start_time'=>request('start_time'),
-                'end_time'=>request('end_time'),
-                'notification'=>request('notification'),
-                'repeat'=>request('repeat')
-            ]);
-            return response()->json(['message' => 'schedule updated successfully'], 200);
-        } else {
-            response()->json(['message' => 'schedule not found'], 404);
-        }
+        // Check ownership (is user who updated is who created it)
+        $schedule = Schedule::findOrFail($id);
+
+        if($user->id != $schedule->user_id)
+            return response()->json(['message' => 'Not Authorized'], 403);
+
+        // Update Schedule
+        $schedule->update([
+            'title'=>request('title'),
+            'description'=>request('description'),
+            'location'=>request('location'),
+            'start_time'=>request('start_time'),
+            'end_time'=>request('end_time'),
+            'notification'=>request('notification'),
+            'repeat'=>request('repeat')
+        ]);
+        return response()->json(['message' => 'schedule updated successfully'], 200);
     }
 
     /**
@@ -104,14 +102,25 @@ class ScheduleController extends Controller
      */
     public function destroy($id)
     {
-        if(Schedule::where('id', $id)->exists()) {
-            $schedule = Schedule::find($id);
-            $schedule->delete();
-    
-            return response()->json(['message' => 'schedule deleted successfully'], 202);
-          } else {
-            response()->json(['message' => 'schedule not found'], 404);
-          }
+        // Get Auth User
+        $user = $this->getAuthUser();
+
+        // Check ownership (is user who updated is who created it)
+        $schedule = Schedule::findOrFail($id);
+
+        if($user->id != $schedule->user_id)
+            return response()->json(['message' => 'Not Authorized'], 403);
+        
+        $schedule->delete();
+
+        return response()->json(['message' => 'schedule deleted successfully'], 202);
+    }
+
+    public function getUserSchedule(Request $request, $username){
+        // Get User
+        $user = User::where('username', $username)->firstOrFail();
+        
+        return Schedule::where('user_id', $user->id)->get();
     }
 
     private function ValidateRequest()
@@ -126,7 +135,7 @@ class ScheduleController extends Controller
             response()->json($validator->messages())->send();
             exit;
         }
-    }
+    }   
 
     private function getAuthUser()
     {
