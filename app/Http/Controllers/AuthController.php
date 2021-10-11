@@ -59,7 +59,7 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function login()
-    {
+    {        
         $credentials = request(['email', 'password']);
 
         if (!$token = auth()->attempt($credentials)) {
@@ -67,6 +67,13 @@ class AuthController extends Controller
         }
 
         return $this->respondWithToken($token);
+    }
+
+    public function logout()
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
     }
 
     public function user()
