@@ -33,7 +33,3 @@ Route::group(['prefix' => 'user'], function ($router) {
 });
 
 Route::apiResource('schedules', 'ScheduleController');
-
-// Route::group(['prefix' => 'schedules'], function ($router) {    
-//     Route::apiResource('', 'ScheduleController');
-// });

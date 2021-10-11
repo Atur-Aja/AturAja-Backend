@@ -63,7 +63,7 @@ class AuthController extends Controller
         $credentials = request(['email', 'password']);
 
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
         return $this->respondWithToken($token);
@@ -101,7 +101,7 @@ class AuthController extends Controller
     public function checktoken()
     { 
         if (Auth::check()) {
-            return response()->json(['status' => 'valid'], 200);
+            return response()->json(['message' => 'Valid'], 200);
         }      
     }
 }
