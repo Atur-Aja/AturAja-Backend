@@ -17,13 +17,13 @@ return [
 
     'paths' => ['api/*'],
 
-    'allowed_methods' => ['*'],
+    'allowed_methods' => ['POST', 'GET', 'DELETE', 'PUT', '*'],
 
-    'allowed_origins' => ['*'],
+    'allowed_origins' => ['http://localhost:3000', 'http://localhost:8000', '*'],
 
     'allowed_origins_patterns' => [],
 
-    'allowed_headers' => ['*'],
+    'allowed_headers' => ['X-Custom-Header', 'Upgrade-Insecure-Requests', '*'],
 
     'exposed_headers' => false,
 
