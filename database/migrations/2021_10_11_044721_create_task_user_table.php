@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class CreateCollaborationsTable extends Migration
+class CreateTaskUserTable extends Migration
 {
     /**
      * Run the migrations.
@@ -13,7 +13,7 @@ class CreateCollaborationsTable extends Migration
      */
     public function up()
     {
-        Schema::create('collaborations', function (Blueprint $table) {
+        Schema::create('task_user', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('task_id');            
@@ -30,6 +30,6 @@ class CreateCollaborationsTable extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('collaborations');
+        Schema::dropIfExists('task_user');
     }
 }

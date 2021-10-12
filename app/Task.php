@@ -15,5 +15,9 @@ class Task extends Model
         'title', 'date', 'time', 'description', 'status',
     ];
 
+    public function users() {
+        return $this->belongsToMany('App\User');
+    }
+
 
 }
