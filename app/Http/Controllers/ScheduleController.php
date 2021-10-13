@@ -57,7 +57,13 @@ class ScheduleController extends Controller
      */
     public function show($id)
     {
-        return Schedule::findOrFail($id);
+        try {
+            return Schedule::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'Not Found'
+            ], 404);
+        }        
     }
 
     /**

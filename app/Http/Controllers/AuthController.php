@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use JWTAuth;
+use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthController extends Controller
 {
@@ -102,6 +104,6 @@ class AuthController extends Controller
     { 
         if (Auth::check()) {
             return response()->json(['message' => 'Valid'], 200);
-        }      
+        }            
     }
 }
