@@ -26,7 +26,7 @@ class AuthController extends Controller
             'email' => 'required|email',
             'phone_number' => 'required|min:10',
             'password' => 'required|min:6|same:password_validate',
-            'password_validate' => 'min:10',
+            'password_validate' => 'min:6',
         ]);
 
         try {
@@ -47,7 +47,7 @@ class AuthController extends Controller
             return response()->json([
                 'code' => 409,
                 'message' => 'Conflict',
-                'description' => 'User Registration Failed!',
+                'description' => 'User registration failed!',
                 'exception' => $e
             ], 409);
         }
@@ -59,14 +59,21 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function login()
-    {
+    {        
         $credentials = request(['email', 'password']);
 
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['error' => 'Unauthorized'], 401);
+            return response()->json(['message' => 'username / password incorrect'], 401);
         }
 
         return $this->respondWithToken($token);
+    }
+
+    public function logout()
+    {
+        auth()->logout();
+
+        return response()->json(['message' => 'Successfully logged out']);
     }
 
     public function user()
@@ -94,7 +101,7 @@ class AuthController extends Controller
     public function checktoken()
     { 
         if (Auth::check()) {
-            return response()->json(['status' => 'valid'], 200);
-        }      
+            return response()->json(['message' => 'Valid'], 200);
+        }            
     }
 }
