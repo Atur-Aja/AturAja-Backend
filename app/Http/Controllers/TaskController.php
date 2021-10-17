@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Models\Todo;
 use App\Models\User;
 
 class TaskController extends Controller
@@ -56,6 +57,7 @@ class TaskController extends Controller
         $this->validate($request, [
             'title'=> 'required',
             'date'=> 'required',
+            'time'=> 'required',
         ]);
 
         try {
@@ -68,6 +70,17 @@ class TaskController extends Controller
 
             $user = User::find(Auth::user()->id);
             $task->users()->attach($user);
+
+            //create todo
+            if(empty($request->todos) == false) {
+                foreach($request->todos as $value) {
+                    $todo = new Todo;
+                    $todo->name = $value;
+                    $todo->task()->associate($task);
+                    $todo->save();
+                }
+            }
+
 
             return response()->json($task, 201);
 
@@ -89,7 +102,16 @@ class TaskController extends Controller
                 "message" => "task not found"
               ], 404);
         } else {
-            return response($task, 200);
+            $todos = Task::find($id)->todos()->get();
+            if(count($todos)==0) {
+                return response($task, 200);
+            } else {
+                return response()->json([
+                    "task" => $task,
+                    "todos" => $todos,
+                ], 200);
+            }
+            
         }         
     }
     
