@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Schedule;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ScheduleController extends Controller
 {
@@ -36,17 +37,26 @@ class ScheduleController extends Controller
         $user = $this->getAuthUser();
 
         // Create Schedule
-        $created = $user->schedules()->create([
-            'title'=>request('title'),
-            'description'=>request('description'),
-            'location'=>request('location'),
-            'start_time'=>request('start_time'),
-            'end_time'=>request('end_time'),
-            'notification'=>request('notification'),
-            'repeat'=>request('repeat')
-        ]);
-
-        return response()->json($created, 201);
+        try {
+            $created = $user->schedules()->create([
+                'title'=>request('title'),
+                'description'=>request('description'),
+                'location'=>request('location'),
+                'start_time'=>request('start_time'),
+                'end_time'=>request('end_time'),
+                'notification'=>request('notification'),
+                'repeat'=>request('repeat')
+            ]);
+            return response()->json($created, 201);
+        }
+        catch(\Exception $e) {
+            return response()->json([
+                'code' => 409,
+                'message' => 'Conflict',
+                'description' => 'Create Schedule Failed!',
+                'exception' => $e
+            ], 409);
+        }
     }
 
     /**
@@ -57,7 +67,13 @@ class ScheduleController extends Controller
      */
     public function show($id)
     {
-        return Schedule::findOrFail($id);
+        try {
+            return Schedule::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'schedule not found'
+            ], 404);
+        }       
     }
 
     /**
@@ -76,7 +92,13 @@ class ScheduleController extends Controller
         $user = $this->getAuthUser();
 
         // Check ownership (is user who updated is who created it)
-        $schedule = Schedule::findOrFail($id);
+        try {
+            $schedule = Schedule::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'schedule not found'
+            ], 404);
+        }        
 
         if($user->id != $schedule->user_id)
             return response()->json(['message' => 'Not Authorized'], 403);
@@ -106,7 +128,13 @@ class ScheduleController extends Controller
         $user = $this->getAuthUser();
 
         // Check ownership (is user who updated is who created it)
-        $schedule = Schedule::findOrFail($id);
+        try {
+            $schedule = Schedule::findOrFail($id);
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'schedule not found'
+            ], 404);
+        } 
 
         if($user->id != $schedule->user_id)
             return response()->json(['message' => 'Not Authorized'], 403);
@@ -118,7 +146,13 @@ class ScheduleController extends Controller
 
     public function getUserSchedule(Request $request, $username){
         // Get User
-        $user = User::where('username', $username)->firstOrFail();
+        try {
+            $user = User::where('username', $username)->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }        
         
         return Schedule::where('user_id', $user->id)->get();
     }
