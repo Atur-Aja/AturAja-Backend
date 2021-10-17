@@ -19,13 +19,12 @@ Use PHP Composer + Artisan
 ```bash
 > php artisan jwt:secret
 ```
+5. Run MySQL database using XAMPP control panel
 
-5. Migrate database
+6. Migrate database
 ```cmd
 > php artisan migrate
 ```
-
-6. Run MySQL database using XAMPP control panel
 
 7. Run this project
 ```bash
