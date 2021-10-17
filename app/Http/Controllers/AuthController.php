@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class AuthController extends Controller
 {
@@ -76,9 +77,16 @@ class AuthController extends Controller
         return response()->json(['message' => 'Successfully logged out']);
     }
 
-    public function user()
+    public function profile(Request $request, $username)
     { 
-        return response()->json(Auth::user());
+        // Get User
+        try {
+            return User::where('username', $username)->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }
     }
 
     /**
