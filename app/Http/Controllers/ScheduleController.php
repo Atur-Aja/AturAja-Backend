@@ -42,7 +42,9 @@ class ScheduleController extends Controller
                 'title'=>request('title'),
                 'description'=>request('description'),
                 'location'=>request('location'),
+                'start_date'=>request('start_date'),
                 'start_time'=>request('start_time'),
+                'end_date'=>request('end_date'),
                 'end_time'=>request('end_time'),
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
@@ -108,7 +110,9 @@ class ScheduleController extends Controller
             'title'=>request('title'),
             'description'=>request('description'),
             'location'=>request('location'),
+            'start_date'=>request('start_date'),
             'start_time'=>request('start_time'),
+            'end_date'=>request('end_date'),
             'end_time'=>request('end_time'),
             'notification'=>request('notification'),
             'repeat'=>request('repeat')
@@ -161,7 +165,9 @@ class ScheduleController extends Controller
     {
         $validator = Validator::make(request()->all(), [
             'title' => 'required',
+            'start_date' => 'required',
             'start_time' => 'required',
+            'end_date' => 'required',
             'end_time' => 'required',
         ]);
 
