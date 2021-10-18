@@ -138,13 +138,15 @@ class TaskController extends Controller
 
     public function destroy($id) 
     {
-        $task = User::find(auth::user()->id)->tasks()->get()->where('id', $id);
-        if(!count($task) == 0) {
-            User::find(auth::user()->id)->tasks()->where('id', $id)->detach();
-  
-          return response()->json([
-            "message" => "records deleted"
-          ], 202);
+        $user = User::find(auth::user()->id);
+        $task = Task::find($id);
+        if(!empty($task)) {
+            $task->todos()->where('task_id', $id)->delete();
+            $user->tasks()->detach($id);
+            $task->delete();
+            return response()->json([
+                "message" => "records deleted"
+            ], 202);
         } else {
           return response()->json([
             "message" => "task not found"
