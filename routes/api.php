@@ -29,6 +29,7 @@ Route::group(['prefix' => 'auth'], function ($router) {
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/{username}/profile', 'AuthController@profile');
+    Route::post('/{username}/profile', 'UserController@uploadphoto');
     Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
     Route::get('/{username}/tasks', 'TaskController@getUserTask');
 });
