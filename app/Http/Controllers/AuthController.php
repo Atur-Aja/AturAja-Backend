@@ -23,32 +23,25 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $this->validate($request, [
-            'username' => 'required|string|unique:users',
-            'email' => 'required|email',
-            'phone_number' => 'required|min:10',
-            'password' => 'required|min:6|same:password_validate',
-            'password_validate' => 'min:6',
+            'username' => 'required|string|unique:users',         
+            'email' => 'required|email',            
+            'password' => 'required|min:8|same:password_validate',
+            'password_validate' => 'min:8',
         ]);
 
         try {
-            $user = User::create([
+            $user = User::create([                
                 'username' => $request->username,
-                'display_name' => $request->username,
                 'email' => $request->email,
-                'password' => app('hash')->make($request->password),
-                'phone_number' => $request->phone_number
+                'password' => app('hash')->make($request->password)                
             ]);
 
             return response()->json([
-                'code' => 201,
-                'message' => 'Success',
-                'description' => 'User successfully created'
+                'message' => 'user successfully created'                
             ], 201);
         } catch (\Exception $e) {
             return response()->json([
-                'code' => 409,
-                'message' => 'Conflict',
-                'description' => 'User registration failed!',
+                'message' => 'user registration failed!',
                 'exception' => $e
             ], 409);
         }
@@ -61,10 +54,25 @@ class AuthController extends Controller
      */
     public function login()
     {        
-        $credentials = request(['email', 'password']);
+        $loginField = request()->input('login');
+        $credentials = null;
+
+        if ($loginField !== null) {
+            $loginType = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+
+            request()->merge([ $loginType => $loginField ]);
+
+            $credentials = request([ $loginType, 'password' ]);
+        } else {
+            return response()->json([
+                'message' => 'please log in using email / username'
+            ], 401);
+        }
 
         if (!$token = auth()->attempt($credentials)) {
-            return response()->json(['message' => 'username / password incorrect'], 401);
+            return response()->json([
+                'message' => 'email / username / password incorrect'
+            ], 401);
         }
 
         return $this->respondWithToken($token);
@@ -74,7 +82,9 @@ class AuthController extends Controller
     {
         auth()->logout();
 
-        return response()->json(['message' => 'Successfully logged out']);
+        return response()->json([
+            'message' => 'successfully logged out'
+        ], 200);
     }
 
     public function profile(Request $request, $username)
@@ -110,7 +120,9 @@ class AuthController extends Controller
     public function checktoken()
     { 
         if (Auth::check()) {
-            return response()->json(['message' => 'Valid'], 200);
+            return response()->json([
+                'message' => 'Valid'
+            ], 200);
         }            
     }
 }

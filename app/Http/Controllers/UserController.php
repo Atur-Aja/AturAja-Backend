@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class UserController extends Controller
 {
-    public function uploadphoto(Request $request, $username){
+    public function setup(Request $request, $username){
         // Validate request
-        $validator = Validator::make($request->all(), [             
+        $validator = Validator::make($request->all(), [            
+            'fullname' => 'required|string|min:3|max:100',
             'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
+            'phone_number' => 'required|min:10'
         ]);
 
         if($validator->fails()) {
@@ -25,16 +27,31 @@ class UserController extends Controller
         if($user->username != $username)
             return response()->json(['message' => 'Not Authorized'], 403);
 
-        $imgName = $username . "." . $request->photo->extension();
-        $request->photo->move(public_path('photo'), $imgName);
+        // Save Image
+        $imgName = $user->username . "." . $request->photo->extension();
+        $request->photo->move(public_path('image'), $imgName);
 
-        // Update Photo
-        $user->photo = $imgName;
-        $user->save();
-        
-        return response()->json(['message' => 'Photo profile successfully updated'], 200);
+        // Save Profile
+        try {
+            $user->update([
+                'fullname' => request('fullname'),
+                'photo' => $imgName,
+                'phone_number' => request('phone_number')
+            ]);
+
+            $user->save();
+
+            return response()->json([
+                'message' => 'profile set up success'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'profile set up failed!',
+                'exception' => $e
+            ], 422);
+        }       
     }
-    
+
     private function getAuthUser()
     {
         try{
