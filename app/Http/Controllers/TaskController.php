@@ -20,7 +20,7 @@ class TaskController extends Controller
     {
         $this->middleware('jwt.verify');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -33,22 +33,21 @@ class TaskController extends Controller
 
     public function getUserTask(Request $request, $username)
     {
-        // Get User
-        try {
-            $user = User::where('username', $username)->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }   
-        
-        $task = User::find($user->id)->tasks()->orderBy('title')->get();
-        if (count($task)==0) {
+        $tasks = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
+        if (count($tasks)==0) {
             return response()->json([
                 "message" => "no tasks"
               ], 200);
         } else {
-            return response($task, 200);
+            foreach ($tasks as $task){
+                if(!count(Task::find($task->id)->todos()->get()) == 0){
+                    $todos[] = Task::find($task->id)->todos()->get();
+                }
+            }
+            return response()->json([
+                "task" => $tasks,
+                "todos" => $todos,
+            ], 200);
         }
     }
 
@@ -101,7 +100,7 @@ class TaskController extends Controller
             return response()->json([
                 "message" => "task not found"
               ], 404);
-        } else {
+        }else {
             $todos = Task::find($id)->todos()->get();
             if(count($todos)==0) {
                 return response($task, 200);
@@ -111,10 +110,9 @@ class TaskController extends Controller
                     "todos" => $todos,
                 ], 200);
             }
-            
-        }         
+        }
     }
-    
+
     public function update(Request $request, $id)
     {
         try {
@@ -123,6 +121,7 @@ class TaskController extends Controller
                 $task[0]->title = is_null($request->title) ? $task[0]->title : $request->title;
                 $task[0]->description = is_null($request->description) ? $task[0]->description : $request->description;
                 $task[0]->date = is_null($request->date) ? $task[0]->date : $request->date;
+                $task[0]->time = is_null($request->time) ? $task[0]->time : $request->time;
                 $task[0]->save();
 
                 return response()->json([
@@ -144,7 +143,7 @@ class TaskController extends Controller
         }
     }
 
-    public function destroy($id) 
+    public function destroy($id)
     {
         try {
             $user = User::find(auth::user()->id);
@@ -155,13 +154,11 @@ class TaskController extends Controller
                 $user->tasks()->detach($id);
                 $task->delete();
                 return response()->json([
-                    "message" => "records deleted",
-                    "tes" => $tes,
+                    "message" => "records deleted"
                 ], 202);
             } else {
                 return response()->json([
-                    "message" => "task not found",
-                    "tes" => $tes,
+                    "message" => "task not found"
                 ], 404);
             }
         } catch (\Exception $e) {
@@ -171,6 +168,6 @@ class TaskController extends Controller
                 'description' => 'delete task failed!',
                 'exception' => $e
             ], 409);
-        } 
+        }
     }
 }

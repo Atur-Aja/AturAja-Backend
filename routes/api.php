@@ -24,7 +24,7 @@ Route::get('/cektoken', 'AuthController@checktoken');
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login');
-    Route::post('logout', 'AuthController@logout');   
+    Route::post('logout', 'AuthController@logout');
 });
 
 Route::group(['prefix' => 'user'], function ($router) {
@@ -35,3 +35,4 @@ Route::group(['prefix' => 'user'], function ($router) {
 
 Route::apiResource('schedules', 'ScheduleController');
 Route::apiResource('tasks', 'TaskController');
+Route::apiResource('todos', 'TodoController');
