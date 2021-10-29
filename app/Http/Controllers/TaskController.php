@@ -33,20 +33,21 @@ class TaskController extends Controller
 
     public function getUserTask(Request $request, $username)
     {
-        $tasks = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
-        if (count($tasks)==0) {
+        $task = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
+        if (count($task)==0) {
             return response()->json([
                 "message" => "no tasks"
               ], 200);
         } else {
-            foreach ($tasks as $task){
+            foreach ($task as $task){
                 if(!count(Task::find($task->id)->todos()->get()) == 0){
-                    $todos[] = Task::find($task->id)->todos()->get();
+                    $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
+                }else {
+                    $tasks[] = ["task" => $task];
                 }
             }
             return response()->json([
-                "task" => $tasks,
-                "todos" => $todos,
+                "tasks" => $tasks
             ], 200);
         }
     }
@@ -116,17 +117,18 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $task = User::find(auth::user()->id)->tasks()->get()->where('id', $id);
-            if (!count($task) == 0) {
-                $task[0]->title = is_null($request->title) ? $task[0]->title : $request->title;
-                $task[0]->description = is_null($request->description) ? $task[0]->description : $request->description;
-                $task[0]->date = is_null($request->date) ? $task[0]->date : $request->date;
-                $task[0]->time = is_null($request->time) ? $task[0]->time : $request->time;
-                $task[0]->save();
+            $task = User::find(auth::user()->id)->tasks()->get();
+            $task = $task->find($id);
+            if (!empty($task)) {
+                $task->title = is_null($request->title) ? $task->title : $request->title;
+                $task->description = is_null($request->description) ? $task->description : $request->description;
+                $task->date = is_null($request->date) ? $task->date : $request->date;
+                $task->time = is_null($request->time) ? $task->time : $request->time;
+                $task->status = is_null($request->status) ? $task->status : $request->status;
+                $task->save();
 
                 return response()->json([
-                    "message" => "task updated successfully",
-                    "test" => $task[0]
+                    "message" => "task updated successfully"
                 ], 200);
             } else {
                 return response()->json([
