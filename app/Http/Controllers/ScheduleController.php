@@ -42,19 +42,20 @@ class ScheduleController extends Controller
                 'title'=>request('title'),
                 'description'=>request('description'),
                 'location'=>request('location'),
+                'start_date'=>request('start_date'),
                 'start_time'=>request('start_time'),
+                'end_date'=>request('end_date'),
                 'end_time'=>request('end_time'),
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
             ]);
-            return response()->json($created, 201);
+            return response()->json([                
+                'message' => 'schedule created successfully',                
+            ], 201);
         }
         catch(\Exception $e) {
-            return response()->json([
-                'code' => 409,
-                'message' => 'Conflict',
-                'description' => 'Create Schedule Failed!',
-                'exception' => $e
+            return response()->json([                
+                'message' => 'failed to create schedule',                
             ], 409);
         }
     }
@@ -101,19 +102,25 @@ class ScheduleController extends Controller
         }        
 
         if($user->id != $schedule->user_id)
-            return response()->json(['message' => 'Not Authorized'], 403);
+            return response()->json([
+                'message' => 'not authorized'
+            ], 403);
 
         // Update Schedule
         $schedule->update([
             'title'=>request('title'),
             'description'=>request('description'),
             'location'=>request('location'),
+            'start_date'=>request('start_date'),
             'start_time'=>request('start_time'),
+            'end_date'=>request('end_date'),
             'end_time'=>request('end_time'),
             'notification'=>request('notification'),
             'repeat'=>request('repeat')
         ]);
-        return response()->json(['message' => 'Schedule updated successfully'], 200);
+        return response()->json([
+            'message' => 'schedule updated successfully'
+        ], 200);
     }
 
     /**
@@ -137,11 +144,15 @@ class ScheduleController extends Controller
         } 
 
         if($user->id != $schedule->user_id)
-            return response()->json(['message' => 'Not Authorized'], 403);
+            return response()->json([
+                'message' => 'not authorized'
+            ], 403);
         
         $schedule->delete();
 
-        return response()->json(['message' => 'Schedule deleted successfully'], 202);
+        return response()->json([
+            'message' => 'schedule deleted successfully'
+        ], 202);
     }
 
     public function getUserSchedule(Request $request, $username){
@@ -161,7 +172,9 @@ class ScheduleController extends Controller
     {
         $validator = Validator::make(request()->all(), [
             'title' => 'required',
+            'start_date' => 'required',
             'start_time' => 'required',
+            'end_date' => 'required',
             'end_time' => 'required',
         ]);
 
@@ -176,7 +189,9 @@ class ScheduleController extends Controller
         try{
             return $user = auth('api')->userOrFail();
         }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
             exit;
         }   
     }

@@ -22,13 +22,14 @@ Route::get('/', function () {
 Route::get('/cektoken', 'AuthController@checktoken');
 
 Route::group(['prefix' => 'auth'], function ($router) {
-    Route::post('register', 'AuthController@register');
+    Route::post('register', 'AuthController@register');    
     Route::post('login', 'AuthController@login');
     Route::post('logout', 'AuthController@logout');
 });
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/{username}/profile', 'AuthController@profile');
+    Route::post('/{username}/profile', 'UserController@setup');
     Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
     Route::get('/{username}/tasks', 'TaskController@getUserTask');
 });

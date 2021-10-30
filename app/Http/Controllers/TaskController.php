@@ -8,6 +8,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TaskController extends Controller
 {
