@@ -4,8 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use App\Models\Todo;
+use App\Models\User;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class TodoController extends Controller
 {
@@ -29,20 +31,23 @@ class TodoController extends Controller
     {
         $this->validate($request, [
             'taskId'=> 'required',
-            'name'=> 'required',
+            'todos'=> 'required',
         ]);
 
+        $task = User::find(auth::user()->id)->tasks()->find($request->taskId);
+
         try {
-            $todo = new Todo;
-            $todo->name = $request->name;
-            $todo->task()->associate($request->taskId);
-            $todo->save();
+            foreach($request->todos as $value) {
+                $todo = new Todo;
+                $todo->name = $value;
+                $todo->task()->associate($task);
+                $todo->save();
+            }
 
             return response()->json([
-                "message" => "Create Todo success",
-                "todo" => $todo
+                "message" => "Create Todo success"
             ], 201);
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'code' => 409,
                 'message' => 'Conflict',
@@ -63,7 +68,7 @@ class TodoController extends Controller
     {
         try {
             $todo = Todo::find($id);
-            if(!empty($todo)) {
+            if (!empty($todo)) {
                 $todo->name = is_null($request->name) ? $todo->name : $request->name;
                 $todo->status = is_null($request->status) ? $todo->status : $request->status;
                 $todo->save();
@@ -72,12 +77,12 @@ class TodoController extends Controller
                     "message" => "todo updated successfully",
                     "test" => $todo
                 ], 200);
-            }else {
+            } else {
                 return response()->json([
                     "message" => "todo not found"
                 ], 404);
             }
-        }catch (\Exception $e) {
+        } catch (\Exception $e) {
             return response()->json([
                 'code' => 409,
                 'message' => 'Conflict',
@@ -97,12 +102,12 @@ class TodoController extends Controller
     {
         try {
             $todo = Todo::find($id);
-            if(!empty($todo)) {
+            if (!empty($todo)) {
                 $todo->delete();
                 return response()->json([
                     "message" => "records deleted"
                 ], 202);
-            }else {
+            } else {
                 return response()->json([
                     "message" => "task not found"
                 ], 404);

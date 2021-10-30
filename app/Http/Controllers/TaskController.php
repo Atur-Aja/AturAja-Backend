@@ -39,10 +39,10 @@ class TaskController extends Controller
                 "message" => "no tasks"
               ], 200);
         } else {
-            foreach ($task as $task){
+            foreach ($task as $task) {
                 if(!count(Task::find($task->id)->todos()->get()) == 0){
                     $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
-                }else {
+                } else {
                     $tasks[] = ["task" => $task];
                 }
             }
@@ -72,7 +72,7 @@ class TaskController extends Controller
             $task->users()->attach($user);
 
             //create todo
-            if(empty($request->todos) == false) {
+            if (empty($request->todos) == false) {
                 foreach($request->todos as $value) {
                     $todo = new Todo;
                     $todo->name = $value;
@@ -80,8 +80,6 @@ class TaskController extends Controller
                     $todo->save();
                 }
             }
-
-
             return response()->json($task, 201);
 
         } catch(\Exception $e) {
@@ -101,9 +99,9 @@ class TaskController extends Controller
             return response()->json([
                 "message" => "task not found"
               ], 404);
-        }else {
+        } else {
             $todos = Task::find($id)->todos()->get();
-            if(count($todos)==0) {
+            if (count($todos)==0) {
                 return response($task, 200);
             } else {
                 return response()->json([
@@ -151,7 +149,7 @@ class TaskController extends Controller
             $user = User::find(auth::user()->id);
             $task = Task::find($id);
 
-            if(!empty($task)) {
+            if (!empty($task)) {
                 $task->todos()->where('task_id', $id)->delete();
                 $user->tasks()->detach($id);
                 $task->delete();
