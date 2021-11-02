@@ -24,15 +24,25 @@ Route::get('/cektoken', 'AuthController@checktoken');
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('register', 'AuthController@register');    
     Route::post('login', 'AuthController@login');
-    Route::post('logout', 'AuthController@logout');   
+    Route::post('logout', 'AuthController@logout');
 });
 
 Route::group(['prefix' => 'user'], function ($router) {
-    Route::get('/{username}/profile', 'AuthController@profile');
+    Route::get('/search', 'UserController@searchUser');
+    Route::get('/{username}/profile', 'UserController@profile');
     Route::post('/{username}/profile', 'UserController@setup');
+    
     Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
     Route::get('/{username}/tasks', 'TaskController@getUserTask');
+    Route::get('/{username}/friends', 'FriendController@getUserFriend');
+});
+
+Route::group(['prefix' => 'friend'], function ($router) {
+    Route::post('/invite', 'FriendController@invite');
+    Route::post('/accept', 'FriendController@accept');
+    Route::post('/delete', 'FriendController@delete');   
 });
 
 Route::apiResource('schedules', 'ScheduleController');
 Route::apiResource('tasks', 'TaskController');
+Route::apiResource('todos', 'TodoController');

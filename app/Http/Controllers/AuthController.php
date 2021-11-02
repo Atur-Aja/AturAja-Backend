@@ -85,19 +85,7 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'successfully logged out'
         ], 200);
-    }
-
-    public function profile(Request $request, $username)
-    { 
-        // Get User
-        try {
-            return User::where('username', $username)->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }
-    }
+    }    
 
     /**
      * Get the token array structure.

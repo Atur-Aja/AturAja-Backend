@@ -19,7 +19,10 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        return response()->json(Schedule::all());
+        // return response()->json(Schedule::all());
+        return response()->json([                
+            'message' => 'you have no access',                
+        ], 403);
     }
 
     /**
@@ -68,13 +71,25 @@ class ScheduleController extends Controller
      */
     public function show($id)
     {
+        // Get Auth User
+        $user = $this->getAuthUser();
+
+        // Check ownership
         try {
-            return Schedule::findOrFail($id);
+            $schedule = Schedule::findOrFail($id);
+            if($user->id != $schedule->user_id){
+                return response()->json([
+                    'message' => 'not authorized'
+                ], 403);
+            }else{
+                return response()->json($schedule, 200);
+            }      
+
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }       
+        } 
     }
 
     /**
@@ -134,7 +149,7 @@ class ScheduleController extends Controller
         // Get Auth User
         $user = $this->getAuthUser();
 
-        // Check ownership (is user who updated is who created it)
+        // Check ownership
         try {
             $schedule = Schedule::findOrFail($id);
         } catch (ModelNotFoundException $e) {

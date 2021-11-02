@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\Task;
+use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 
@@ -20,7 +21,7 @@ class TaskController extends Controller
     {
         $this->middleware('jwt.verify');
     }
-    
+
     /**
      * Display a listing of the resource.
      *
@@ -33,22 +34,22 @@ class TaskController extends Controller
 
     public function getUserTask(Request $request, $username)
     {
-        // Get User
-        try {
-            $user = User::where('username', $username)->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }   
-        
-        $task = User::find($user->id)->tasks()->orderBy('title')->get();
+        $task = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
         if (count($task)==0) {
             return response()->json([
                 "message" => "no tasks"
               ], 200);
         } else {
-            return response($task, 200);
+            foreach ($task as $task) {
+                if(!count(Task::find($task->id)->todos()->get()) == 0){
+                    $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
+                } else {
+                    $tasks[] = ["task" => $task];
+                }
+            }
+            return response()->json([
+                "tasks" => $tasks
+            ], 200);
         }
     }
 
@@ -57,6 +58,7 @@ class TaskController extends Controller
         $this->validate($request, [
             'title'=> 'required',
             'date'=> 'required',
+            'time'=> 'required',
         ]);
 
         try {
@@ -70,6 +72,15 @@ class TaskController extends Controller
             $user = User::find(Auth::user()->id);
             $task->users()->attach($user);
 
+            //create todo
+            if (empty($request->todos) == false) {
+                foreach($request->todos as $value) {
+                    $todo = new Todo;
+                    $todo->name = $value;
+                    $todo->task()->associate($task);
+                    $todo->save();
+                }
+            }
             return response()->json($task, 201);
 
         } catch(\Exception $e) {
@@ -90,45 +101,74 @@ class TaskController extends Controller
                 "message" => "task not found"
               ], 404);
         } else {
-            return response($task, 200);
-        }         
+            $todos = Task::find($id)->todos()->get();
+            if (count($todos)==0) {
+                return response($task, 200);
+            } else {
+                return response()->json([
+                    "task" => $task,
+                    "todos" => $todos,
+                ], 200);
+            }
+        }
     }
-    
+
     public function update(Request $request, $id)
     {
-        $task = User::find(auth::user()->id)->tasks()->get()->where('id', $id);
-        if (!count($task) == 0) {
-            $task[0]->title = is_null($request->title) ? $task[0]->title : $request->title;
-            $task[0]->description = is_null($request->description) ? $task[0]->description : $request->description;
-            $task[0]->date = is_null($request->date) ? $task[0]->date : $request->date;
-            $task[0]->save();
+        try {
+            $task = User::find(auth::user()->id)->tasks()->get();
+            $task = $task->find($id);
+            if (!empty($task)) {
+                $task->title = is_null($request->title) ? $task->title : $request->title;
+                $task->description = is_null($request->description) ? $task->description : $request->description;
+                $task->date = is_null($request->date) ? $task->date : $request->date;
+                $task->time = is_null($request->time) ? $task->time : $request->time;
+                $task->status = is_null($request->status) ? $task->status : $request->status;
+                $task->save();
 
+                return response()->json([
+                    "message" => "task updated successfully"
+                ], 200);
+            } else {
+                return response()->json([
+                    "message" => "task not found"
+                ], 404);
+            }
+        } catch (\Exception $e) {
             return response()->json([
-                "message" => "task updated successfully",
-                "test" => $task[0]
-              ], 200);
-        } else {
-            return response()->json([
-                "message" => "task not found"
-              ], 404);
+                'code' => 409,
+                'message' => 'Conflict',
+                'description' => 'update task failed!',
+                'exception' => $e
+            ], 409);
         }
-
     }
 
-    public function destroy($id) 
+    public function destroy($id)
     {
-        $task = User::find(auth::user()->id)->tasks()->get()->where('id', $id);
-        if(!count($task) == 0) {
-            User::find(auth::user()->id)->tasks()->where('id', $id)->detach();
-  
-          return response()->json([
-            "message" => "records deleted"
-          ], 202);
-        } else {
-          return response()->json([
-            "message" => "task not found"
-          ], 404);
+        try {
+            $user = User::find(auth::user()->id);
+            $task = Task::find($id);
+
+            if (!empty($task)) {
+                $task->todos()->where('task_id', $id)->delete();
+                $user->tasks()->detach($id);
+                $task->delete();
+                return response()->json([
+                    "message" => "records deleted"
+                ], 202);
+            } else {
+                return response()->json([
+                    "message" => "task not found"
+                ], 404);
+            }
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 409,
+                'message' => 'Conflict',
+                'description' => 'delete task failed!',
+                'exception' => $e
+            ], 409);
         }
     }
-
 }

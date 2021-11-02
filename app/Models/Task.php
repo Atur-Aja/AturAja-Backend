@@ -19,5 +19,7 @@ class Task extends Model
         return $this->belongsToMany('App\Models\User');
     }
 
-
+    public function todos() {
+        return $this->hasMany('App\Models\todo');
+    }
 }
