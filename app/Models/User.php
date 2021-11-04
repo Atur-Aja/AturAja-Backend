@@ -7,7 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Tymon\JWTAuth\Contracts\JWTSubject;
 
-class User extends Authenticatable implements JWTSubject
+class User extends Authenticatable implements JWTSubject, MustVerifyEmail
 {
     use Notifiable;
 
@@ -62,8 +62,8 @@ class User extends Authenticatable implements JWTSubject
     {
         return $this->hasMany(Schedule::class);
     }
-        
-    public function tasks() 
+
+    public function tasks()
     {
         return $this->belongsToMany('App\Models\Task');
     }

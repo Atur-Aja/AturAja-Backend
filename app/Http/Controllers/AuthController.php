@@ -34,7 +34,8 @@ class AuthController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => app('hash')->make($request->password)
-            ]);
+            ])->sendEmailVerificationNotification();
+            event(new Registered($user));
 
             return response()->json([
                 'message' => 'user successfully created'
@@ -54,14 +55,13 @@ class AuthController extends Controller
      */
     public function login()
     {
+
         $loginField = request()->input('login');
         $credentials = null;
 
         if ($loginField !== null) {
             $loginType = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-
             request()->merge([ $loginType => $loginField ]);
-
             $credentials = request([ $loginType, 'password' ]);
         } else {
             return response()->json([
