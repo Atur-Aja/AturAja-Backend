@@ -60,7 +60,7 @@ class User extends Authenticatable implements JWTSubject
 
     public function friends()
     {
-        return $this->belongsToMany(User::class, 'friends', 'user_id', 'role_id');
+        return $this->belongsToMany(User::class, 'friends', 'first_user_id', 'second_user_id');
     }
 
     public function schedules()
