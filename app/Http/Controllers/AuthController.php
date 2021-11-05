@@ -35,7 +35,6 @@ class AuthController extends Controller
                 'email' => $request->email,
                 'password' => app('hash')->make($request->password)
             ])->sendEmailVerificationNotification();
-            event(new Registered($user));
 
             return response()->json([
                 'message' => 'user successfully created'

@@ -40,5 +40,5 @@ Route::group(['prefix' => 'user'], function ($router) {
 });
 
 Route::apiResource('schedules', 'ScheduleController');
-Route::apiResource('tasks', 'TaskController');
+Route::apiResource('tasks', 'TaskController')->middleware('verified');
 Route::apiResource('todos', 'TodoController');
