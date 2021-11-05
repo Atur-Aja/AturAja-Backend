@@ -12,6 +12,11 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ScheduleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -49,13 +54,13 @@ class ScheduleController extends Controller
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
             ]);
-            return response()->json([                
-                'message' => 'schedule created successfully',                
+            return response()->json([
+                'message' => 'schedule created successfully',
             ], 201);
         }
         catch(\Exception $e) {
-            return response()->json([                
-                'message' => 'failed to create schedule',                
+            return response()->json([
+                'message' => 'failed to create schedule',
             ], 409);
         }
     }
@@ -74,7 +79,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }       
+        }
     }
 
     /**
@@ -99,7 +104,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }        
+        }
 
         if($user->id != $schedule->user_id)
             return response()->json([
@@ -141,13 +146,13 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        } 
+        }
 
         if($user->id != $schedule->user_id)
             return response()->json([
                 'message' => 'not authorized'
             ], 403);
-        
+
         $schedule->delete();
 
         return response()->json([
@@ -163,8 +168,8 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'user not found'
             ], 404);
-        }        
-        
+        }
+
         return Schedule::where('user_id', $user->id)->get();
     }
 
@@ -182,7 +187,7 @@ class ScheduleController extends Controller
             response()->json($validator->messages())->send();
             exit;
         }
-    }   
+    }
 
     private function getAuthUser()
     {
@@ -193,6 +198,6 @@ class ScheduleController extends Controller
                 'message' => 'Not authenticated, please login first'
             ], 401)->send();
             exit;
-        }   
+        }
     }
 }

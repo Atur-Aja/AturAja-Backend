@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Schedule;
+use App\Models\Task;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -23,8 +24,16 @@ class DashboardController extends Controller
                     'message' => 'no task'
                 ], 200);
             } else {
-                $task = $task->sortBy("time");
-                return response()->json($task, 200);
+                foreach ($task as $task) {
+                    if (!count(Task::find($task->id)->todos()->get()) == 0) {
+                        $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
+                    } else {
+                        $tasks[] = ["task" => $task];
+                    }
+                }
+                return response()->json([
+                    "tasks" => $tasks
+                ], 200);
             }
         } catch (\Exception $e) {
             return response()->json([
@@ -39,13 +48,20 @@ class DashboardController extends Controller
     public function sortSchedule(Request $request)
     {
         try {
-            $schedule = User::find(auth::user()->id)->schedules()->where('start_date', $request->date)->get();
-            if (count($schedule)==0) {
+            $schedules = User::find(auth::user()->id)->schedules()->get();
+            foreach ($schedules as $schedules) {
+                if (strtotime($schedules->start_date) <= strtotime($request->date) && strtotime($schedules->end_date) >= strtotime($request->date)) {
+                    $schedule[] = $schedules;
+                }
+            }
+
+            if (empty($schedule)) {
                 return response()->json([
                     'message' => 'no task'
                 ], 200);
             } else {
-                $schedule = $schedule->sortBy("start_time");
+                $start_time = array_column($schedule, 'start_time');
+                array_multisort($start_time, SORT_ASC, $schedule);
                 return response()->json($schedule, 200);
             }
         } catch (\Exception $e) {
