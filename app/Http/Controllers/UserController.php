@@ -13,7 +13,7 @@ class UserController extends Controller
     public function searchUser(Request $request)
     { 
         $username = $request->username;        
-        $count = User::where('username', $username)->count();
+        $count = User::where('username', 'like', '%'.$username."%")->count();
         if($count==0){
             return response()->json([
                 'message' => 'user not found'
@@ -35,7 +35,7 @@ class UserController extends Controller
         }
     }
     
-    public function setup(Request $request, $username){
+    public function setup(Request $request){
         // Validate request
         $validator = Validator::make($request->all(), [            
             'fullname' => 'required|string|min:3|max:100',
@@ -47,10 +47,8 @@ class UserController extends Controller
             return response()->json($validator->messages());
         }
 
-        // Validate User
-        $user = $this->getAuthUser();
-        if($user->username != $username)
-            return response()->json(['message' => 'Not Authorized'], 403);
+        // Get User
+        $user = $this->getAuthUser();        
 
         // Save Image
         $imgName = $user->username . "." . $request->photo->extension();

@@ -32,7 +32,7 @@ class TaskController extends Controller
         return response()->json(Task::all());
     }
 
-    public function getUserTask(Request $request, $username)
+    public function getUserTask(Request $request)
     {
         $task = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
         if (count($task)==0) {

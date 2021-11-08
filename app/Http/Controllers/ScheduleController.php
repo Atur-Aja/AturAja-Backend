@@ -5,10 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Carbon\Carbon;
 use App\Models\User;
 use App\Models\Schedule;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class ScheduleController extends Controller
 {
@@ -19,7 +19,6 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        // return response()->json(Schedule::all());
         return response()->json([                
             'message' => 'you have no access',                
         ], 403);
@@ -170,16 +169,9 @@ class ScheduleController extends Controller
         ], 202);
     }
 
-    public function getUserSchedule(Request $request, $username){
-        // Get User
-        try {
-            $user = User::where('username', $username)->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }        
-        
+    public function getUserSchedule(Request $request){
+        // Get Auth User
+        $user = $this->getAuthUser();       
         return Schedule::where('user_id', $user->id)->get();
     }
 

@@ -30,17 +30,18 @@ Route::group(['prefix' => 'auth'], function ($router) {
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/search', 'UserController@searchUser');
     Route::get('/{username}/profile', 'UserController@profile');
-    Route::post('/{username}/profile', 'UserController@setup');
+    Route::post('/profile', 'UserController@setup');
     
-    Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
-    Route::get('/{username}/tasks', 'TaskController@getUserTask');
-    Route::get('/{username}/friends', 'FriendController@getUserFriend');
+    Route::get('/schedules', 'ScheduleController@getUserSchedule');
+    Route::get('/tasks', 'TaskController@getUserTask');
+    Route::get('/friends', 'FriendController@getUserFriend');
 });
 
 Route::group(['prefix' => 'friend'], function ($router) {
     Route::post('/invite', 'FriendController@invite');
     Route::post('/accept', 'FriendController@accept');
-    Route::post('/delete', 'FriendController@delete');   
+    Route::post('/decline', 'FriendController@decline');
+    Route::delete('/delete', 'FriendController@delete');   
 });
 
 Route::apiResource('schedules', 'ScheduleController');
