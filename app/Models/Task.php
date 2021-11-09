@@ -22,6 +22,4 @@ class Task extends Model
     public function todos() {
         return $this->hasMany('App\Models\todo');
     }
-
-
 }

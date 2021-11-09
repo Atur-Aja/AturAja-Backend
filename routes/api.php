@@ -33,12 +33,22 @@ Route::group(['prefix' => 'dashboard'], function ($router) {
 });
 
 Route::group(['prefix' => 'user'], function ($router) {
-    Route::get('/{username}/profile', 'AuthController@profile');
-    Route::post('/{username}/profile', 'UserController@setup');
-    Route::get('/{username}/schedules', 'ScheduleController@getUserSchedule');
-    Route::get('/{username}/tasks', 'TaskController@getUserTask');
+    Route::get('/search', 'UserController@searchUser');
+    Route::get('/{username}/profile', 'UserController@profile');
+    Route::post('/profile', 'UserController@setup');
+
+    Route::get('/schedules', 'ScheduleController@getUserSchedule');
+    Route::get('/tasks', 'TaskController@getUserTask');
+    Route::get('/friends', 'FriendController@getUserFriend');
+});
+
+Route::group(['prefix' => 'friend'], function ($router) {
+    Route::post('/invite', 'FriendController@invite');
+    Route::post('/accept', 'FriendController@accept');
+    Route::post('/decline', 'FriendController@decline');
+    Route::delete('/delete', 'FriendController@delete');
 });
 
 Route::apiResource('schedules', 'ScheduleController');
-Route::apiResource('tasks', 'TaskController')->middleware('verified');
+Route::apiResource('tasks', 'TaskController');
 Route::apiResource('todos', 'TodoController');

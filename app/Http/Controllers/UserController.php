@@ -5,12 +5,37 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Models\User;
 
 class UserController extends Controller
 {
-    public function setup(Request $request, $username){
+    public function searchUser(Request $request)
+    { 
+        $username = $request->username;        
+        $count = User::where('username', 'like', '%'.$username."%")->count();
+        if($count==0){
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }else{
+            return User::where('username', 'like', '%'.$username."%")->get(['id','username', 'photo']);
+        }        
+    }
+    
+    public function profile(Request $request, $username)
+    { 
+        // Get Profile
+        try {
+            return User::where('username', $username)->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }
+    }
+    
+    public function setup(Request $request){
         // Validate request
         $validator = Validator::make($request->all(), [            
             'fullname' => 'required|string|min:3|max:100',
@@ -22,10 +47,8 @@ class UserController extends Controller
             return response()->json($validator->messages());
         }
 
-        // Validate User
-        $user = $this->getAuthUser();
-        if($user->username != $username)
-            return response()->json(['message' => 'Not Authorized'], 403);
+        // Get User
+        $user = $this->getAuthUser();        
 
         // Save Image
         $imgName = $user->username . "." . $request->photo->extension();
