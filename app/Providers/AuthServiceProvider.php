@@ -27,13 +27,13 @@ class AuthServiceProvider extends ServiceProvider
     {
         $this->registerPolicies();
 
-        VerifyEmail::toMailUsing(function ($notifiable, $url) {
-            $url = 'http://localhost:3000/setup-profile';
-            return (new MailMessage)
-                ->subject('Verify Email Address')
-                ->line('Click the button below to verify your email address.')
-                ->action('Verify Email Address', $url)
-                ->line('Thank you for using Atur Aja');
-        });
+//        VerifyEmail::toMailUsing(function ($notifiable, $url) {
+//            $url = 'http://localhost:3000/setup-profile';
+//            return (new MailMessage)
+//                ->subject('Verify Email Address')
+//                ->line('Click the button below to verify your email address.')
+//                ->action('Verify Email Address', $url)
+//                ->line('Thank you for using Atur Aja');
+//        });
     }
 }

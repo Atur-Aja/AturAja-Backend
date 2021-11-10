@@ -49,6 +49,12 @@ Route::group(['prefix' => 'friend'], function ($router) {
     Route::delete('/delete', 'FriendController@delete');
 });
 
+Route::group(['prefix' => 'tasks'], function ($router) {
+    Route::post('/add', 'TaskCollaboration@add');
+    Route::get('/see', 'TaskCollaboration@see');
+    Route::delete('/remove', 'TaskCollaboration@remove');
+});
+
 Route::apiResource('schedules', 'ScheduleController');
 Route::apiResource('tasks', 'TaskController');
 Route::apiResource('todos', 'TodoController');
