@@ -23,10 +23,8 @@ class CreateSchedulesTable extends Migration
             $table->date('end_date');            
             $table->time('end_time', 0);
             $table->string('notification')->nullable();
-            $table->string('repeat')->nullable();
-            $table->unsignedBigInteger('user_id');
-            $table->timestamps();
-            $table->foreign('user_id')->references('id')->on('users');            
+            $table->string('repeat')->nullable();            
+            $table->timestamps();                        
         });
     }
 

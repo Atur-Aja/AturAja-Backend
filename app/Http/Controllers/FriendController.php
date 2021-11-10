@@ -13,7 +13,7 @@ class FriendController extends Controller
     public function getUserFriend()
     {
         $user = $this->getAuthUser();
-        return $user->friends()->get(['fullname', 'photo']);
+        return $user->friends()->where('friends.status', 'accepted')->get();
     }
 
     public function invite(Request $request)
