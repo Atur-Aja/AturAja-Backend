@@ -64,9 +64,9 @@ class User extends Authenticatable implements JWTSubject, MustVerifyEmail
         return $this->belongsToMany(User::class, 'friends', 'first_user_id', 'second_user_id');
     }
 
-    public function schedules()
+    public function schedules() 
     {
-        return $this->hasMany(Schedule::class);
+        return $this->belongsToMany('App\Models\Schedule');
     }
 
     public function tasks()

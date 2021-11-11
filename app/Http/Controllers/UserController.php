@@ -5,8 +5,10 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
+
 
 class UserController extends Controller
 {
@@ -14,6 +16,7 @@ class UserController extends Controller
     { 
         $username = $request->username;        
         $count = User::where('username', 'like', '%'.$username."%")->count();
+        
         if($count==0){
             return response()->json([
                 'message' => 'user not found'
@@ -24,8 +27,7 @@ class UserController extends Controller
     }
     
     public function profile(Request $request, $username)
-    { 
-        // Get Profile
+    {         
         try {
             return User::where('username', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
@@ -38,9 +40,9 @@ class UserController extends Controller
     public function setup(Request $request){
         // Validate request
         $validator = Validator::make($request->all(), [            
-            'fullname' => 'required|string|min:3|max:100',
+            'fullname' => 'required|string|min:3|max:32',
             'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
-            'phone_number' => 'required|min:10'
+            'phone_number' => 'numeric|digits_between:10,16'
         ]);
 
         if($validator->fails()) {
@@ -48,7 +50,7 @@ class UserController extends Controller
         }
 
         // Get User
-        $user = $this->getAuthUser();        
+        $user = $this->getAuthUser();               
 
         // Save Image
         $imgName = $user->username . "." . $request->photo->extension();
@@ -58,7 +60,7 @@ class UserController extends Controller
         try {
             $user->update([
                 'fullname' => request('fullname'),
-                'photo' => $imgName,
+                'photo' => public_path('image') . '\\'. $imgName,
                 'phone_number' => request('phone_number')
             ]);
 

@@ -39,7 +39,10 @@ Route::group(['prefix' => 'user'], function ($router) {
 
     Route::get('/schedules', 'ScheduleController@getUserSchedule');
     Route::get('/tasks', 'TaskController@getUserTask');
-    Route::get('/friends', 'FriendController@getUserFriend');
+
+    Route::get('/friends', 'FriendController@getUserFriends');
+    Route::get('/friendsreq', 'FriendController@getFriendsReq');
+    Route::get('/friendsreqsent', 'FriendController@getFriendsReqSent');
 });
 
 Route::group(['prefix' => 'friend'], function ($router) {

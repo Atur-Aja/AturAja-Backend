@@ -10,10 +10,22 @@ use App\Models\User;
 class FriendController extends Controller
 {
     
-    public function getUserFriend()
+    public function getUserFriends()
     {
         $user = $this->getAuthUser();
-        return $user->friends()->get(['fullname', 'photo']);
+        return $user->friends()->where('friends.status', 'accepted')->get();
+    }
+
+    public function getFriendsReq()
+    {
+        $user = $this->getAuthUser();
+        return $user->friends()->where('friends.status', 'pending')->get();
+    }
+
+    public function getFriendsReqSent()
+    {
+        $user = $this->getAuthUser();
+        return $user->friends()->where('friends.status', 'requested')->get();
     }
 
     public function invite(Request $request)
@@ -24,24 +36,70 @@ class FriendController extends Controller
 
         // Check and Get Friend
         $friend_id = $request->user_id;
-        $friend = $this->checkFriend($friend_id);              
+        $friend = $this->checkFriend($friend_id); 
+        
+        if($user_id == $friend_id){
+            return response()->json([
+                'message' => 'can\'t invite yourself'
+            ], 409);
+        }
 
-        $user->friends()->attach($friend_id, ['status' => 'pending']);
+        $user->friends()->attach($friend_id, ['status' => 'requested']);
         $friend->friends()->attach($user_id, ['status' => 'pending']);
 
         return response()->json([
-            'message' => 'invite successfully send'
+            'message' => 'friend request successfully send'
         ], 200);
     }
 
     public function accept(Request $request)
     {
-        $this->updateInviteReq($request, 'accepted');        
+        // Get Auth User
+        $user = $this->getAuthUser();
+        $user_id = $user->id;        
+
+        // Check and Get Friend
+        $friend_id = $request->user_id;
+        $friend = $this->checkFriend($friend_id);
+        
+        // Check if friend req exist
+        if($user->friends()->where('second_user_id', $friend_id)->doesntExist()){
+            return response()->json([
+                'message' => 'friend request not found'
+            ], 404);
+        }
+
+        $user->friends()->updateExistingPivot($friend_id, ['status' => 'accepted']);
+        $friend->friends()->updateExistingPivot($user_id, ['status' => 'accepted']);
+
+        response()->json([
+            'message' => 'friend request successfully accepted'
+        ], 200);                
     }
 
     public function decline(Request $request)
     {
-        $this->updateInviteReq($request, 'declined');        
+        // Get Auth User
+        $user = $this->getAuthUser();
+        $user_id = $user->id;        
+
+        // Check and Get Friend
+        $friend_id = $request->user_id;
+        $friend = $this->checkFriend($friend_id);
+        
+        // Check if friend req exist
+        if($user->friends()->where('second_user_id', $friend_id)->doesntExist()){
+            return response()->json([
+                'message' => 'friend request not found'
+            ], 404);
+        }
+
+        $user->friends()->detach($friend_id);
+        $friend->friends()->detach($user_id);
+
+        return response()->json([
+            'message' => 'friend request successfully declined'
+        ], 200);
     }
 
     public function delete(Request $request)
@@ -52,7 +110,14 @@ class FriendController extends Controller
 
         // Check and Get Friend
         $friend_id = $request->user_id;
-        $friend = $this->checkFriend($friend_id);        
+        $friend = $this->checkFriend($friend_id);
+        
+        // Check if friends exist
+        if($user->friends()->where('second_user_id', $friend_id)->doesntExist()){
+            return response()->json([
+                'message' => 'friend not found'
+            ], 404);
+        }
 
         $user->friends()->detach($friend_id);
         $friend->friends()->detach($user_id);
@@ -60,33 +125,7 @@ class FriendController extends Controller
         return response()->json([
             'message' => 'friend deleted successfully'
         ], 200);
-    }
-
-    private function updateInviteReq($request, $status){
-        // Get Auth User
-        $user = $this->getAuthUser();
-        $user_id = $user->id;        
-
-        // Check and Get Friend
-        $friend_id = $request->user_id;
-        $friend = $this->checkFriend($friend_id);
-        
-        // Check if invite req exist
-        if($user->friends()->where('second_user_id', $friend_id)->doesntExist()){
-            response()->json([
-                'message' => 'invite not found'
-            ], 404)->send();
-            exit;
-        }
-
-        $user->friends()->updateExistingPivot($friend_id, ['status' => $status]);
-        $friend->friends()->updateExistingPivot($user_id, ['status' => $status]);
-
-        response()->json([
-            'message' => 'invite request successfully ' . $status
-        ], 200)->send();
-        exit;
-    }
+    }    
 
     private function checkFriend($friend_id)
     {

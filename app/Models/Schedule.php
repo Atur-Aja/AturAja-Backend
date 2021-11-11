@@ -8,8 +8,7 @@ class Schedule extends Model
 {
     protected $guarded = ['id'];
 
-    public function users()
-    {
-        return $this->belongsTo(User::class);
+    public function users() {
+        return $this->belongsToMany('App\Models\User');
     }
 }

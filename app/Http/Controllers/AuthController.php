@@ -4,9 +4,10 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
+use App\Rules\IsValidPassword;
 
 class AuthController extends Controller
 {
@@ -23,10 +24,10 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $this->validate($request, [
-            'username' => 'required|string|unique:users',
-            'email' => 'required|email',
-            'password' => 'required|min:8|same:password_validate',
-            'password_validate' => 'min:8',
+            'username' => ['required', 'min:4', 'max:16', 'alpha_dash', 'unique:users'],
+            'email' => ['required', 'email', 'unique:users'],
+            'password' => ['required', 'min:8', 'same:password_validate', new isValidPassword()],
+            'password_validate' => ['required'],
         ]);
 
         try {
@@ -34,8 +35,7 @@ class AuthController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => app('hash')->make($request->password)
-            ])->sendEmailVerificationNotification();
-
+            ]);
             return response()->json([
                 'message' => 'user successfully created'
             ], 201);
