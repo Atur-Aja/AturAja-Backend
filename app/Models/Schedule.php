@@ -8,8 +8,7 @@ class Schedule extends Model
 {
     protected $guarded = ['id'];
 
-    public function users()
-    {
-        return $this->belongsToMany(User::class, 'meetings', 'user_id', 'schedule_id');
+    public function users() {
+        return $this->belongsToMany('App\Models\User');
     }
 }

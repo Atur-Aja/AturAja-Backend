@@ -40,7 +40,7 @@ class ScheduleController extends Controller
 
         // Create Schedule
         try {
-            $created = $user->schedules()->create([
+            $schedule = Schedule::create([
                 'title'=>request('title'),
                 'description'=>request('description'),
                 'location'=>request('location'),
@@ -51,13 +51,20 @@ class ScheduleController extends Controller
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
             ]);
+
+            $schedule->users()->attach(Auth::user()->id);
+            if($request->has('friends')){
+                $schedule->users()->attach(request('friends'));
+            }
+
             return response()->json([                
                 'message' => 'schedule created successfully',                
             ], 201);
         }
         catch(\Exception $e) {
             return response()->json([                
-                'message' => 'failed to create schedule',                
+                'message' => 'failed to create schedule',
+                'error' => $e,                
             ], 409);
         }
     }
@@ -75,15 +82,15 @@ class ScheduleController extends Controller
 
         // Check ownership
         try {
-            $schedule = Schedule::findOrFail($id);
-            if($user->id != $schedule->user_id){
-                return response()->json([
-                    'message' => 'not authorized'
+            $schedule = $user->schedules()->get()->where('id', $id)->first();
+            if($schedule==null){
+                return response()->json([                
+                    'message' => 'you have no access',                
                 ], 403);
-            }else{
+            } else {
                 return response()->json($schedule, 200);
-            }      
-
+            }
+            
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'schedule not found'
@@ -106,35 +113,42 @@ class ScheduleController extends Controller
         // Get Auth User
         $user = $this->getAuthUser();
 
-        // Check ownership (is user who updated is who created it)
+        // Update Schedule
         try {
-            $schedule = Schedule::findOrFail($id);
+            $schedule = $user->schedules()->get()->where('id', $id)->first();
+            if($schedule==null){
+                return response()->json([                
+                    'message' => 'you have no access',                
+                ], 403);
+            } else {
+                return response()->json($schedule, 200);
+            }
+
+            $schedule->update([
+                'title'=>request('title'),
+                'description'=>request('description'),
+                'location'=>request('location'),
+                'start_date'=>request('start_date'),
+                'start_time'=>request('start_time'),
+                'end_date'=>request('end_date'),
+                'end_time'=>request('end_time'),
+                'notification'=>request('notification'),
+                'repeat'=>request('repeat')
+            ]);
+
+            if($request->has('friends')){
+                $schedule->users()->sync(request('friends'));
+            }
+            $schedule->users()->attach(Auth::user()->id);
+
+            return response()->json([
+                'message' => 'schedule updated successfully'
+            ], 200);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }        
-
-        if($user->id != $schedule->user_id)
-            return response()->json([
-                'message' => 'not authorized'
-            ], 403);
-
-        // Update Schedule
-        $schedule->update([
-            'title'=>request('title'),
-            'description'=>request('description'),
-            'location'=>request('location'),
-            'start_date'=>request('start_date'),
-            'start_time'=>request('start_time'),
-            'end_date'=>request('end_date'),
-            'end_time'=>request('end_time'),
-            'notification'=>request('notification'),
-            'repeat'=>request('repeat')
-        ]);
-        return response()->json([
-            'message' => 'schedule updated successfully'
-        ], 200);
+        }       
     }
 
     /**
@@ -148,41 +162,44 @@ class ScheduleController extends Controller
         // Get Auth User
         $user = $this->getAuthUser();
 
-        // Check ownership
         try {
-            $schedule = Schedule::findOrFail($id);
+            $schedule = $user->schedules()->get()->where('id', $id)->first();
+            if($schedule==null){
+                return response()->json([                
+                    'message' => 'you have no access',                
+                ], 403);
+            } else {
+                return response()->json($schedule, 200);
+            }
+
+            $schedule->users()->detach();
+            $schedule->delete();
+            return response()->json([
+                'message' => 'schedule deleted successfully'
+            ], 202);
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        } 
-
-        if($user->id != $schedule->user_id)
-            return response()->json([
-                'message' => 'not authorized'
-            ], 403);
-        
-        $schedule->delete();
-
-        return response()->json([
-            'message' => 'schedule deleted successfully'
-        ], 202);
+        }        
     }
 
     public function getUserSchedule(Request $request){
         // Get Auth User
         $user = $this->getAuthUser();       
-        return Schedule::where('user_id', $user->id)->get();
+        return $user->schedules()->get();
     }
 
     private function ValidateRequest()
     {
         $validator = Validator::make(request()->all(), [
-            'title' => 'required',
-            'start_date' => 'required',
-            'start_time' => 'required',
-            'end_date' => 'required',
-            'end_time' => 'required',
+            'title' => 'required|string|min:3|max:32',
+            'description' => 'max:128',
+            'location' => 'max:128',
+            'start_date' => 'required|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',
+            'end_date' => 'required|date_format:Y-m-d|after:start_date',
+            'end_time' => 'required|date_format:H:i|after:start_time',
         ]);
 
         if($validator->fails()) {
