@@ -48,5 +48,6 @@ Route::group(['prefix' => 'friend'], function ($router) {
 });
 
 Route::apiResource('schedules', 'ScheduleController');
+Route::post('schedules/match', 'ScheduleController@matchSchedule');
 Route::apiResource('tasks', 'TaskController');
 Route::apiResource('todos', 'TodoController');

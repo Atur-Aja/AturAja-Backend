@@ -184,6 +184,74 @@ class ScheduleController extends Controller
         }        
     }
 
+    public function matchSchedule(Request $request){
+        // Validate Request
+        $validator = Validator::make(request()->all(), [            
+            'date' => 'required|date_format:Y-m-d',
+            'start_time' => 'required|date_format:H:i',            
+            'end_time' => 'required|date_format:H:i|after:start_time',
+            'friends' => 'required',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json($validator->messages());
+        }
+
+        // Get Auth User
+        $user = $this->getAuthUser();       
+        
+        // Check if auth user in friends
+        if(!in_array($user->id, $request->friends)){
+            return response()->json([                
+                'message' => 'you have no access',                
+            ], 403);
+        }
+
+        $scheduleArray = [];
+
+        // Get All Participant Schedule
+        foreach($request->friends as $friendsId){
+            try {
+                $participant = User::findOrFail($friendsId);                             
+            } catch (ModelNotFoundException $e) {
+                return response()->json([
+                    'message' => 'user not found'
+                ], 404);
+            }
+
+            $schedules = $participant->schedules()->get();
+
+            // Get All Schedule on that date
+            foreach ($schedules as $schedule) {
+                if (strtotime($schedule->start_date) <= strtotime($request->date) 
+                    && strtotime($schedule->end_date) >= strtotime($request->date)) {
+                    
+                    // Convert time string to time block
+                    $startTime = $this->stringToTimeBlock($schedule->start_time, 15, "bawah");
+                    $endTime = $this->stringToTimeBlock($schedule->end_time, 15, "atas");
+                    array_push($scheduleArray, [$startTime, $endTime]);
+                }
+            }
+        }
+
+        // Get Free Times
+        $startTime = $this->stringToTimeBlock($request->start_time, 15, "bawah");
+        $endTime = $this->stringToTimeBlock($request->end_time, 15, "atas");
+        $freeTimes = $this->getFreeTimes($scheduleArray, ($startTime-$endTime));
+
+        // convert timeBlock to string
+        $rekomendasi = [];
+        for ($i = 0; $i < count($freeTimes); $i++) {
+            $startTime = $this->timeBlockToString($freeTimes[$i][0], 15);
+            $endTime = $this->timeBlockToString($freeTimes[$i][1], 15);
+            array_push($rekomendasi, array("start_time"=>$startTime, "end_time"=>$endTime));
+        }
+
+        return response()->json([
+            $rekomendasi,
+        ], 200);
+    }    
+
     public function getUserSchedule(Request $request){
         // Get Auth User
         $user = $this->getAuthUser();       
@@ -218,5 +286,75 @@ class ScheduleController extends Controller
             ], 401)->send();
             exit;
         }   
+    }
+
+    private function stringToTimeBlock($time, $duration=15, $batas="bawah"){
+		$time = strtotime ($time) - strtotime("today"); //Get Timestamp
+		$duration = $duration * 60;
+
+		// Pembulatan Kebawah
+		$selisih = $time % $duration;
+		if($selisih!=0){
+			if($batas=="bawah"){
+				$time = $time - $selisih;
+			}elseif($batas=="atas"){
+				$time = $time + ($duration - $selisih);
+			}
+		}
+		
+		$time = $time/$duration;
+		return $time;
+	}
+
+	private function timeBlockToString($time, $duration=15){
+		$time = $time * 15;
+		$hours = floor($time / 60);
+   		$minutes = ($time % 60);
+
+		$timeString = $hours . ":" . $minutes;
+		
+		return $timeString;
+	}
+
+    private function getFreeTimes($schedules, $scheduleTimeLength=1){
+        $timeTable = array_fill(0, 96, FALSE);
+
+        for ($i = 0; $i < count($schedules); $i++) {
+            for ($j = $schedules[$i][0]; $j <= $schedules[$i][1]; $j++) {
+                $timeTable[$j] = TRUE;
+            }
+        }
+    
+        $freeTimes = [];
+        $counter = 0;
+        $startFreeTime = null;    
+    
+        for ($i = 0; $i < 96; $i++) {
+            if($timeTable[$i]){
+                // simpan timeblock kosong
+                if($startFreeTime!=null && $counter>$scheduleTimeLength){
+                    $endFreeTime = $startFreeTime + $counter - 1;
+                    $freeTime = [$startFreeTime, $endFreeTime];
+                    array_push($freeTimes, $freeTime);
+                }
+                $counter = 0;
+                $startFreeTime = null;             
+            }else{
+                // hitung timeblock kosong
+                if($counter==0 && $startFreeTime==null){
+                    $startFreeTime = $i;
+                }
+                $counter++;             
+            }
+        }
+    
+        // simpan timeblock kosong
+        if($startFreeTime!=null && $counter>$scheduleTimeLength){
+            $endFreeTime = $startFreeTime + $counter - 1;
+            $freeTime = [$startFreeTime, $endFreeTime];
+            array_push($freeTimes, $freeTime);
+        }
+
+        return $freeTimes;
     }
 }
