@@ -252,13 +252,33 @@ class ScheduleController extends Controller
         }
 
         return response()->json([
-            $rekomendasi,
+            "rekomendasi" => $rekomendasi,
         ], 200);
     }    
 
     public function getUserSchedule(Request $request){
         // Get Auth User
         $user = $this->getAuthUser();
+        $schedules = $user->schedules()->orderBy('start_date')->get();
+
+        if (count($schedules)==0) {
+            return response()->json([
+                "message" => "no tasks"
+              ], 200);
+        } else {
+            foreach ($schedules as $schedule) {
+                $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
+                if (count($member)==1) {
+                    $member = null;
+                }
+                $schedules[] = ["schedule" => $schedule, "member" => $member];
+            }
+
+            return response()->json([
+                "schedules" => $schedules
+            ], 200);
+        }
+
         return $user->schedules()->get();
     }
 
