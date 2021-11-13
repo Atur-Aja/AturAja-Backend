@@ -14,16 +14,21 @@ class UserController extends Controller
 {
     public function searchUser(Request $request)
     { 
-        $username = $request->username;        
-        $count = User::where('username', 'like', '%'.$username."%")->count();
+        // Validate Request
+        $validator = Validator::make($request->all(), [            
+            'username' => 'required|string|min:1|max:16',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json($validator->messages());
+        }
         
-        if($count==0){
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }else{
-            return User::where('username', 'like', '%'.$username."%")->get(['id','username', 'photo']);
-        }        
+        // Get Auth User
+        $user = $this->getAuthUser();
+        
+        $username = $request->username;        
+        return User::where('username', 'like', '%'.$username."%")
+                    ->where('username', '!=', $user->username)->get(['id','username', 'photo']);        
     }
     
     public function profile(Request $request, $username)
