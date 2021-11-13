@@ -12,6 +12,11 @@ use App\Models\Schedule;
 
 class ScheduleController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+
     /**
      * Display a listing of the resource.
      *
@@ -19,8 +24,8 @@ class ScheduleController extends Controller
      */
     public function index()
     {
-        return response()->json([                
-            'message' => 'you have no access',                
+        return response()->json([
+            'message' => 'you have no access',
         ], 403);
     }
 
@@ -57,14 +62,14 @@ class ScheduleController extends Controller
                 $schedule->users()->attach(request('friends'));
             }
 
-            return response()->json([                
-                'message' => 'schedule created successfully',                
+            return response()->json([
+                'message' => 'schedule created successfully',
             ], 201);
         }
         catch(\Exception $e) {
-            return response()->json([                
+            return response()->json([
                 'message' => 'failed to create schedule',
-                'error' => $e,                
+                'error' => $e,
             ], 409);
         }
     }
@@ -84,18 +89,17 @@ class ScheduleController extends Controller
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
             if($schedule==null){
-                return response()->json([                
-                    'message' => 'you have no access',                
+                return response()->json([
+                    'message' => 'you have no access',
                 ], 403);
             } else {
                 return response()->json($schedule, 200);
             }
-            
         } catch (ModelNotFoundException $e) {
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        } 
+        }
     }
 
     /**
@@ -117,8 +121,8 @@ class ScheduleController extends Controller
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
             if($schedule==null){
-                return response()->json([                
-                    'message' => 'you have no access',                
+                return response()->json([
+                    'message' => 'you have no access',
                 ], 403);
             } else {
                 return response()->json($schedule, 200);
@@ -148,7 +152,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }       
+        }
     }
 
     /**
@@ -165,8 +169,8 @@ class ScheduleController extends Controller
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
             if($schedule==null){
-                return response()->json([                
-                    'message' => 'you have no access',                
+                return response()->json([
+                    'message' => 'you have no access',
                 ], 403);
             } else {
                 return response()->json($schedule, 200);
@@ -181,7 +185,7 @@ class ScheduleController extends Controller
             return response()->json([
                 'message' => 'schedule not found'
             ], 404);
-        }        
+        }
     }
 
     public function matchSchedule(Request $request){
@@ -254,7 +258,7 @@ class ScheduleController extends Controller
 
     public function getUserSchedule(Request $request){
         // Get Auth User
-        $user = $this->getAuthUser();       
+        $user = $this->getAuthUser();
         return $user->schedules()->get();
     }
 
@@ -274,7 +278,7 @@ class ScheduleController extends Controller
             response()->json($validator->messages())->send();
             exit;
         }
-    }   
+    }
 
     private function getAuthUser()
     {
@@ -285,7 +289,7 @@ class ScheduleController extends Controller
                 'message' => 'Not authenticated, please login first'
             ], 401)->send();
             exit;
-        }   
+        }
     }
 
     private function stringToTimeBlock($time, $duration=15, $batas="bawah"){

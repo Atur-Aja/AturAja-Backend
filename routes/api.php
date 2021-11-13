@@ -22,16 +22,21 @@ Route::get('/', function () {
 Route::get('/cektoken', 'AuthController@checktoken');
 
 Route::group(['prefix' => 'auth'], function ($router) {
-    Route::post('register', 'AuthController@register');    
+    Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login');
     Route::post('logout', 'AuthController@logout');
+});
+
+Route::group(['prefix' => 'dashboard'], function ($router) {
+    Route::post('task', 'DashboardController@sortTas');
+    Route::post('schedule', 'DashboardController@sortSchedule');
 });
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/search', 'UserController@searchUser');
     Route::get('/{username}/profile', 'UserController@profile');
     Route::post('/profile', 'UserController@setup');
-    
+
     Route::get('/schedules', 'ScheduleController@getUserSchedule');
     Route::get('/tasks', 'TaskController@getUserTask');
 
@@ -44,7 +49,13 @@ Route::group(['prefix' => 'friend'], function ($router) {
     Route::post('/invite', 'FriendController@invite');
     Route::post('/accept', 'FriendController@accept');
     Route::post('/decline', 'FriendController@decline');
-    Route::delete('/delete', 'FriendController@delete');   
+    Route::delete('/delete', 'FriendController@delete');
+});
+
+Route::group(['prefix' => 'tasks'], function ($router) {
+    Route::post('/add', 'TaskCollaboration@add');
+    Route::get('/see', 'TaskCollaboration@see');
+    Route::delete('/remove', 'TaskCollaboration@remove');
 });
 
 Route::apiResource('schedules', 'ScheduleController');

@@ -24,21 +24,21 @@ class AuthController extends Controller
     public function register(Request $request)
     {
         $this->validate($request, [
-            'username' => ['required', 'min:4', 'max:16', 'alpha_dash', 'unique:users'],         
-            'email' => ['required', 'email', 'unique:users'],            
+            'username' => ['required', 'min:4', 'max:16', 'alpha_dash', 'unique:users'],
+            'email' => ['required', 'email', 'unique:users'],
             'password' => ['required', 'min:8', 'same:password_validate', new isValidPassword()],
             'password_validate' => ['required'],
         ]);
 
         try {
-            $user = User::create([                
+            $user = User::create([
                 'username' => $request->username,
                 'email' => $request->email,
-                'password' => app('hash')->make($request->password)                
+                'password' => app('hash')->make($request->password)
             ]);
             return response()->json([
-                'message' => 'user successfully created'                
-            ], 201);            
+                'message' => 'user successfully created'
+            ], 201);
         } catch (\Exception $e) {
             return response()->json([
                 'message' => 'user registration failed!',
@@ -53,7 +53,8 @@ class AuthController extends Controller
      * @return \Illuminate\Http\JsonResponse
      */
     public function login()
-    {        
+    {
+
         $loginField = request()->input('login');
         $credentials = null;
 
@@ -83,7 +84,19 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'successfully logged out'
         ], 200);
-    }    
+    }
+
+    public function profile(Request $request, $username)
+    {
+        // Get User
+        try {
+            return User::where('username', $username)->firstOrFail();
+        } catch (ModelNotFoundException $e) {
+            return response()->json([
+                'message' => 'user not found'
+            ], 404);
+        }
+    }
 
     /**
      * Get the token array structure.
@@ -104,11 +117,11 @@ class AuthController extends Controller
 
     // Check token validity
     public function checktoken()
-    { 
+    {
         if (Auth::check()) {
             return response()->json([
                 'message' => 'Valid'
             ], 200);
-        }            
+        }
     }
 }

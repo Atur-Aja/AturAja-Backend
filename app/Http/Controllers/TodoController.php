@@ -30,11 +30,11 @@ class TodoController extends Controller
     public function store(Request $request)
     {
         $this->validate($request, [
-            'taskId'=> 'required',
+            'task_id'=> 'required',
             'todos'=> 'required',
         ]);
 
-        $task = User::find(auth::user()->id)->tasks()->find($request->taskId);
+        $task = User::find(auth::user()->id)->tasks()->find($request->task_id);
 
         try {
             foreach($request->todos as $value) {

@@ -41,12 +41,17 @@ class TaskController extends Controller
               ], 200);
         } else {
             foreach ($task as $task) {
+                $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
+                if (count($member)==1) {
+                    $member = null;
+                }
                 if(!count(Task::find($task->id)->todos()->get()) == 0){
-                    $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
+                    $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get(), "member" => $member];
                 } else {
-                    $tasks[] = ["task" => $task];
+                    $tasks[] = ["task" => $task, "member" => $member];
                 }
             }
+
             return response()->json([
                 "tasks" => $tasks
             ], 200);
@@ -81,7 +86,16 @@ class TaskController extends Controller
                     $todo->save();
                 }
             }
-            return response()->json($task, 201);
+
+            //add friends for collaboration
+            if (empty($request->friends) == false) {
+                $friends = $request->friends;
+                $task->users()->attach($friends);
+            }
+
+            return response()->json([
+                "message" => "create task successfully"
+            ], 201);
 
         } catch(\Exception $e) {
             return response()->json([
