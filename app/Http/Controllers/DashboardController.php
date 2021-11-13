@@ -25,10 +25,14 @@ class DashboardController extends Controller
                 ], 200);
             } else {
                 foreach ($task as $task) {
+                    $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
+                    if (count($member)==1) {
+                        $member = null;
+                    }
                     if (!count(Task::find($task->id)->todos()->get()) == 0) {
-                        $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get()];
+                        $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get(), "member" => $member];
                     } else {
-                        $tasks[] = ["task" => $task];
+                        $tasks[] = ["task" => $task, "member" => $member];
                     }
                 }
                 return response()->json([
