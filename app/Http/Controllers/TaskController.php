@@ -29,7 +29,9 @@ class TaskController extends Controller
      */
     public function index()
     {
-        return response()->json(Task::all());
+        return response()->json([
+            'message' => 'you have no access',
+        ], 403);
     }
 
     public function getUserTask(Request $request)

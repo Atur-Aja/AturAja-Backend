@@ -56,6 +56,7 @@ Route::group(['prefix' => 'tasks'], function ($router) {
     Route::post('/add', 'TaskCollaboration@add');
     Route::get('/see', 'TaskCollaboration@see');
     Route::delete('/remove', 'TaskCollaboration@remove');
+    Route::delete('/update', 'TaskCollaboration@update');
 });
 
 Route::apiResource('schedules', 'ScheduleController');
