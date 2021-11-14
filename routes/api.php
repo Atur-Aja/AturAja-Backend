@@ -41,6 +41,7 @@ Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/tasks', 'TaskController@getUserTask');
 
     Route::get('/friends', 'FriendController@getUserFriends');
+    Route::post('/friends', 'FriendController@getFriendsByUsername');
     Route::get('/friendsreq', 'FriendController@getFriendsReq');
     Route::get('/friendsreqsent', 'FriendController@getFriendsReqSent');
 
@@ -58,6 +59,7 @@ Route::group(['prefix' => 'tasks'], function ($router) {
     Route::post('/add', 'TaskCollaboration@add');
     Route::get('/see', 'TaskCollaboration@see');
     Route::delete('/remove', 'TaskCollaboration@remove');
+    Route::delete('/update', 'TaskCollaboration@update');
 });
 
 Route::apiResource('schedules', 'ScheduleController');

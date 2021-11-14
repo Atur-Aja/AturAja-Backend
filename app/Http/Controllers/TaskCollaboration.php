@@ -46,4 +46,14 @@ class TaskCollaboration extends Controller
             "message" => "add friends collaboration successfully"
         ], 200);
     }
+
+    public function update(Request $request)
+    {
+        $task = Task::find($request->task_id);
+        $friends = $request->friends;
+        $task->users()->sync($friends);
+        return response()->json([
+            "message" => "update friends collaboration successfully"
+        ], 200);
+    }
 }
