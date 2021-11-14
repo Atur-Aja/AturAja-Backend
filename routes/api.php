@@ -41,6 +41,7 @@ Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/tasks', 'TaskController@getUserTask');
 
     Route::get('/friends', 'FriendController@getUserFriends');
+    Route::post('/friends', 'FriendController@getFriendsByUsername');
     Route::get('/friendsreq', 'FriendController@getFriendsReq');
     Route::get('/friendsreqsent', 'FriendController@getFriendsReqSent');
 });

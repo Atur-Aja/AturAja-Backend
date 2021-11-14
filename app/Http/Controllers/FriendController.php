@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
 
@@ -16,7 +17,25 @@ class FriendController extends Controller
         return $user->friends()->where('friends.status', 'accepted')->get();
     }
 
-    public function getFriendsReq()
+    public function getFriendsByUsername(Request $request)
+    {
+        // Validate Request
+        $validator = Validator::make($request->all(), [            
+            'username' => 'required|string|min:1|max:16',
+        ]);
+
+        if($validator->fails()) {
+            return response()->json($validator->messages());
+        }
+        
+        $user = $this->getAuthUser();
+        return $user->friends()
+            ->where('friends.status', 'accepted')
+            ->where('users.username', 'like', '%'.$request->username."%")
+            ->get(['users.id', 'users.username', 'users.photo']);
+    }
+
+    public function getFriendsReq(Request $request)
     {
         $user = $this->getAuthUser();
         return $user->friends()->where('friends.status', 'pending')->get();
@@ -72,7 +91,7 @@ class FriendController extends Controller
         $user->friends()->updateExistingPivot($friend_id, ['status' => 'accepted']);
         $friend->friends()->updateExistingPivot($user_id, ['status' => 'accepted']);
 
-        response()->json([
+        return response()->json([
             'message' => 'friend request successfully accepted'
         ], 200);                
     }
