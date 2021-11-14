@@ -58,15 +58,22 @@ class DashboardController extends Controller
                     $schedule[] = $schedules;
                 }
             }
-
             if (empty($schedule)) {
                 return response()->json([
-                    'message' => 'no task'
+                    'message' => 'no schedule'
                 ], 200);
             } else {
                 $start_time = array_column($schedule, 'start_time');
                 array_multisort($start_time, SORT_ASC, $schedule);
-                return response()->json($schedule, 200);
+
+                foreach ($schedule as $schedule) {
+                    $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
+                    if (count($member)==1) {
+                        $member = null;
+                    }
+                    $scheduleMember[] = ["schedule" => $schedule, "member" => $member];
+                }
+                return response()->json($scheduleMember, 200);
             }
         } catch (\Exception $e) {
             return response()->json([
