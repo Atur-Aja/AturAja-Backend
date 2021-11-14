@@ -172,8 +172,6 @@ class ScheduleController extends Controller
                 return response()->json([
                     'message' => 'you have no access',
                 ], 403);
-            } else {
-                return response()->json($schedule, 200);
             }
 
             $schedule->users()->detach();
@@ -271,11 +269,11 @@ class ScheduleController extends Controller
                 if (count($member)==1) {
                     $member = null;
                 }
-                $schedules[] = ["schedule" => $schedule, "member" => $member];
+                $schedulesColab[] = ["schedule" => $schedule, "member" => $member];
             }
 
             return response()->json([
-                "schedules" => $schedules
+                "schedules" => $schedulesColab
             ], 200);
         }
 
