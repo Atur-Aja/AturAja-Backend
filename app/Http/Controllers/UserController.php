@@ -27,8 +27,15 @@ class UserController extends Controller
         $user = $this->getAuthUser();
         
         $username = $request->username;        
-        return User::where('username', 'like', '%'.$username."%")
-                    ->where('username', '!=', $user->username)->get(['id','username', 'photo']);        
+        $users = User::where('username', 'like', '%'.$username."%")
+                    ->where('username', '!=', $user->username)->get(['id','username', 'photo']);
+        
+        foreach ($users as $user) {
+            $user_photo = $user->photo;
+            $user->link = Storage::url($user_photo);
+            }
+        
+        return $users;       
     }
     
     public function profile(Request $request, $username)
@@ -65,7 +72,7 @@ class UserController extends Controller
         try {
             $user->update([
                 'fullname' => request('fullname'),
-                'photo' => public_path('image') . '\\'. $imgName,
+                'photo' => $imgName,
                 'phone_number' => request('phone_number')
             ]);
 

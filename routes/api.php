@@ -43,6 +43,8 @@ Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/friends', 'FriendController@getUserFriends');
     Route::get('/friendsreq', 'FriendController@getFriendsReq');
     Route::get('/friendsreqsent', 'FriendController@getFriendsReqSent');
+
+    Route::get('/image/{filename}', 'PhotoController@image');
 });
 
 Route::group(['prefix' => 'friend'], function ($router) {
