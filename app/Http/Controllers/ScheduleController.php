@@ -199,13 +199,6 @@ class ScheduleController extends Controller
 
         // Get Auth User
         $user = $this->getAuthUser();       
-        
-        // Check if auth user in friends
-        if(!in_array($user->id, $request->friends)){
-            return response()->json([                
-                'message' => 'you have no access',                
-            ], 403);
-        }
 
         $scheduleArray = [];
 
