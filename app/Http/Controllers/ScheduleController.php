@@ -124,8 +124,6 @@ class ScheduleController extends Controller
                 return response()->json([
                     'message' => 'you have no access',
                 ], 403);
-            } else {
-                return response()->json($schedule, 200);
             }
 
             $schedule->update([

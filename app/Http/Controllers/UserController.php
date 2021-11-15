@@ -40,6 +40,9 @@ class UserController extends Controller
     
     public function profile(Request $request, $username)
     {         
+        // Get Auth User
+        $user = $this->getAuthUser();
+        
         try {
             return User::where('username', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
