@@ -142,6 +142,9 @@ class TaskController extends Controller
                 $task->status = is_null($request->status) ? $task->status : $request->status;
                 $task->save();
 
+                $friends = $request->friends;
+                $task->users()->sync($friends);
+
                 return response()->json([
                     "message" => "task updated successfully"
                 ], 200);
