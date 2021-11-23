@@ -24,13 +24,17 @@ class DashboardController extends Controller
                     'message' => 'no task'
                 ], 200);
             } else {
+                $priority = array_column($task, 'priority');
+                array_multisort($priority, SORT_DESC, $task);
+
                 foreach ($task as $task) {
                     $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
                     if (count($member)==1) {
                         $member = null;
                     }
-                    if (!count(Task::find($task->id)->todos()->get()) == 0) {
-                        $tasks[] = ["task" => $task, "todo" => Task::find($task->id)->todos()->get(), "member" => $member];
+                    $todo = Task::find($task->id)->todos()->get();
+                    if (!count($todo) == 0) {
+                        $tasks[] = ["task" => $task, "todo" => $todo, "member" => $member];
                     } else {
                         $tasks[] = ["task" => $task, "member" => $member];
                     }
