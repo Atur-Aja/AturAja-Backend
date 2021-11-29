@@ -24,10 +24,12 @@ class DashboardController extends Controller
                     'message' => 'no task'
                 ], 200);
             } else {
-                $priority = array_column($task, 'priority');
-                array_multisort($priority, SORT_DESC, $task);
-
                 foreach ($task as $task) {
+                    $taskes[] = $task;
+                }
+                $priority = array_column($taskes, 'priority');
+                array_multisort($priority, SORT_DESC, $taskes);
+                foreach ($taskes as $task) {
                     $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
                     if (count($member)==1) {
                         $member = null;
