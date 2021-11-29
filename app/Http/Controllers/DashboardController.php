@@ -31,9 +31,6 @@ class DashboardController extends Controller
                 array_multisort($priority, SORT_DESC, $taskes);
                 foreach ($taskes as $task) {
                     $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
-                    if (count($member)==1) {
-                        $member = null;
-                    }
                     $todo = Task::find($task->id)->todos()->get();
                     if (!count($todo) == 0) {
                         $tasks[] = ["task" => $task, "todo" => $todo, "member" => $member];
