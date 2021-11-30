@@ -71,6 +71,7 @@ class TodoController extends Controller
             if (!empty($todo)) {
                 $todo->name = is_null($request->name) ? $todo->name : $request->name;
                 $todo->status = is_null($request->status) ? $todo->status : $request->status;
+                $todo->update_by = is_null($request->update_by) ? $todo->update_by : $request->update_by;
                 $todo->save();
 
                 return response()->json([

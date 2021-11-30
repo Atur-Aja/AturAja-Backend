@@ -17,7 +17,8 @@ class CreateTodosTable extends Migration
             $table->id();
             $table->string('name');
             $table->boolean('status')->nullable();
-            $table->unsignedBigInteger('task_id');             
+            $table->string('update_by')->nullable();
+            $table->unsignedBigInteger('task_id');
             $table->timestamps();
             $table->foreign('task_id')->references('id')->on('tasks');
         });

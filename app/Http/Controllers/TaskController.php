@@ -34,7 +34,7 @@ class TaskController extends Controller
         ], 403);
     }
 
-    public function getUserTask(Request $request)
+    public function getUserTask()
     {
         $task = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
         if (count($task)==0) {
@@ -74,6 +74,7 @@ class TaskController extends Controller
                 'description' => $request->description,
                 'date' => $request->date,
                 'time' => $request->time,
+                'priority' => $request->priority,
             ]);
 
             $user = User::find(Auth::user()->id);
@@ -139,8 +140,12 @@ class TaskController extends Controller
                 $task->description = is_null($request->description) ? $task->description : $request->description;
                 $task->date = is_null($request->date) ? $task->date : $request->date;
                 $task->time = is_null($request->time) ? $task->time : $request->time;
+                $task->priority = is_null($request->priority) ? $task->priority : $request->priority;
                 $task->status = is_null($request->status) ? $task->status : $request->status;
                 $task->save();
+
+                $friends = $request->friends;
+                $task->users()->sync($friends);
 
                 return response()->json([
                     "message" => "task updated successfully"

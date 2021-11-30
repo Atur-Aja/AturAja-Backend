@@ -12,7 +12,7 @@ class Todo extends Model
      * @var array
      */
     protected $fillable = [
-        'name', 'status', 
+        'name', 'status', 'update_by',
     ];
 
     public function task() {
