@@ -18,9 +18,8 @@ class CreateSchedulesTable extends Migration
             $table->string('title');
             $table->string('description')->nullable();
             $table->string('location')->nullable();
-            $table->date('start_date');            
-            $table->time('start_time', 0);
-            $table->date('end_date');            
+            $table->date('date');            
+            $table->time('start_time', 0);            
             $table->time('end_time', 0);
             $table->string('notification')->nullable();
             $table->string('repeat')->nullable();            

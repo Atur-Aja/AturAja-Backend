@@ -25,10 +25,15 @@ class UserController extends Controller
         
         // Get Auth User
         $user = $this->getAuthUser();
+
+        // Get User Friends
+        $friends = $user->friends()->where('friends.status', 'accepted')->get(['username']);
         
         $username = $request->username;        
         $users = User::where('username', 'like', '%'.$username."%")
-                    ->where('username', '!=', $user->username)->get(['id','username', 'photo']);
+                    ->where('username', '!=', $user->username)
+                    ->whereNotIn('username', $friends)
+                    ->get(['id','username', 'photo']);
         
         foreach ($users as $user) {
             $user_photo = $user->photo;

@@ -54,7 +54,7 @@ class DashboardController extends Controller
         try {
             $schedules = User::find(auth::user()->id)->schedules()->get();
             foreach ($schedules as $schedules) {
-                if (strtotime($schedules->start_date) <= strtotime($request->date) && strtotime($schedules->end_date) >= strtotime($request->date)) {
+                if (strtotime($schedules->date) <= strtotime($request->date)) {
                     $schedule[] = $schedules;
                 }
             }

@@ -63,6 +63,13 @@ class FriendController extends Controller
             ], 409);
         }
 
+        // Check if friend req exist
+        if($user->friends()->where('second_user_id', $friend_id)->exists()){
+            return response()->json([
+                'message' => 'you have invited him or her'
+            ], 409);
+        }
+
         $user->friends()->attach($friend_id, ['status' => 'requested']);
         $friend->friends()->attach($user_id, ['status' => 'pending']);
 
