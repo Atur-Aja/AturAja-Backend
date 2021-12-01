@@ -41,7 +41,7 @@ class ScheduleController extends Controller
         $this->ValidateRequest();
 
         // Get Auth User
-        $user = User::find(auth::user()->id);
+        $user = $this->getAuthUser();
 
         // Create Schedule
         try {
@@ -105,7 +105,7 @@ class ScheduleController extends Controller
     public function show($id)
     {
         // Get Auth User
-        $user =  User::find(auth::user()->id);
+        $user = $this->getAuthUser();
 
         // Check ownership
         try {
@@ -137,7 +137,7 @@ class ScheduleController extends Controller
         $this->ValidateRequest();
 
         // Get Auth User
-        $user =  User::find(auth::user()->id);
+        $user = $this->getAuthUser();
 
         // Update Schedule
         try {
@@ -183,7 +183,7 @@ class ScheduleController extends Controller
     public function destroy($id)
     {
         // Get Auth User
-        $user =  User::find(auth::user()->id);
+        $user = $this->getAuthUser();
 
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
@@ -219,7 +219,7 @@ class ScheduleController extends Controller
         }
 
         // Get Auth User
-        $user =  User::find(auth::user()->id);       
+        $user = $this->getAuthUser();       
 
         $scheduleArray = [];
 
@@ -267,7 +267,7 @@ class ScheduleController extends Controller
 
     public function getUserSchedule(Request $request){
         // Get Auth User
-        $user =  User::find(auth::user()->id);
+        $user = $this->getAuthUser();
         $schedules = $user->schedules()->orderBy('date')->get();
 
         if (count($schedules)==0) {
@@ -419,5 +419,15 @@ class ScheduleController extends Controller
         }else{
             return $freeTimes;
         }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            exit;
+        }   
     }
 }

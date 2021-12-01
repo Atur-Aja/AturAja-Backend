@@ -18,7 +18,8 @@ class DashboardController extends Controller
     public function sortTas(Request $request)
     {
         try {
-            $task = User::find(auth::user()->id)->tasks()->where('date', $request->date)->get();
+            $user = $this->getAuthUser();
+            $task = $user->tasks()->where('date', $request->date)->get();
             if (count($task)==0) {
                 return response()->json([
                     'message' => 'no task'
@@ -55,7 +56,8 @@ class DashboardController extends Controller
     public function sortSchedule(Request $request)
     {
         try {
-            $schedules = User::find(auth::user()->id)->schedules()->get();
+            $user = $this->getAuthUser(); 
+            $schedules = $user->schedules()->get();
             foreach ($schedules as $schedules) {
                 if (strtotime($schedules->date) <= strtotime($request->date)) {
                     $schedule[] = $schedules;
@@ -86,5 +88,15 @@ class DashboardController extends Controller
                 'exception' => $e
             ], 409);
         }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            exit;
+        }   
     }
 }

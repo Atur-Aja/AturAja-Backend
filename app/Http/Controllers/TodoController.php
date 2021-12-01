@@ -34,7 +34,8 @@ class TodoController extends Controller
             'todos'=> 'required',
         ]);
 
-        $task = User::find(auth::user()->id)->tasks()->find($request->task_id);
+        $user = $this->getAuthUser();
+        $task = $user->tasks()->find($request->task_id);
 
         try {
             foreach($request->todos as $value) {
@@ -121,5 +122,15 @@ class TodoController extends Controller
                 'exception' => $e
             ], 409);
         }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            exit;
+        }   
     }
 }
