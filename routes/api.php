@@ -27,7 +27,7 @@ Route::group(['prefix' => 'auth'], function ($router) {
 });
 
 Route::group(['prefix' => 'dashboard'], function ($router) {
-    Route::post('task', 'DashboardController@sortTas');
+    Route::post('task', 'DashboardController@sortTask');
     Route::post('schedule', 'DashboardController@sortSchedule');
 });
 

@@ -10,12 +10,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
-
-    public function sortTas(Request $request)
+    public function sortTask(Request $request)
     {
         try {
             $user = $this->getAuthUser();
@@ -95,7 +90,9 @@ class DashboardController extends Controller
         try{
             return $user = auth('api')->userOrFail();
         }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
             exit;
         }   
     }

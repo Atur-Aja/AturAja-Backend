@@ -12,11 +12,6 @@ use App\Models\Schedule;
 
 class ScheduleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -37,11 +32,11 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate Request
-        $this->ValidateRequest();
-
         // Get Auth User
         $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->ValidateRequest();        
 
         // Create Schedule
         try {
@@ -133,11 +128,11 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate Request
-        $this->ValidateRequest();
-
         // Get Auth User
         $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->ValidateRequest();        
 
         // Update Schedule
         try {
@@ -206,6 +201,9 @@ class ScheduleController extends Controller
     }
 
     public function matchSchedule(Request $request){
+        // Get Auth User
+        $user = $this->getAuthUser();
+
         // Validate Request
         $validator = Validator::make(request()->all(), [            
             'date' => 'required|date_format:Y-m-d',
@@ -216,10 +214,7 @@ class ScheduleController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }
-
-        // Get Auth User
-        $user = $this->getAuthUser();       
+        }               
 
         $scheduleArray = [];
 
@@ -426,7 +421,9 @@ class ScheduleController extends Controller
         try{
             return $user = auth('api')->userOrFail();
         }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json(['message' => 'Not authenticated, please login first'])->send();
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
             exit;
         }   
     }
