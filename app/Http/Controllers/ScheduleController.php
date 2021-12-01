@@ -41,7 +41,7 @@ class ScheduleController extends Controller
         $this->ValidateRequest();
 
         // Get Auth User
-        $user = $this->getAuthUser();
+        $user = User::find(auth::user()->id);
 
         // Create Schedule
         try {
@@ -105,7 +105,7 @@ class ScheduleController extends Controller
     public function show($id)
     {
         // Get Auth User
-        $user = $this->getAuthUser();
+        $user =  User::find(auth::user()->id);
 
         // Check ownership
         try {
@@ -137,7 +137,7 @@ class ScheduleController extends Controller
         $this->ValidateRequest();
 
         // Get Auth User
-        $user = $this->getAuthUser();
+        $user =  User::find(auth::user()->id);
 
         // Update Schedule
         try {
@@ -183,7 +183,7 @@ class ScheduleController extends Controller
     public function destroy($id)
     {
         // Get Auth User
-        $user = $this->getAuthUser();
+        $user =  User::find(auth::user()->id);
 
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
@@ -219,7 +219,7 @@ class ScheduleController extends Controller
         }
 
         // Get Auth User
-        $user = $this->getAuthUser();       
+        $user =  User::find(auth::user()->id);       
 
         $scheduleArray = [];
 
@@ -267,7 +267,7 @@ class ScheduleController extends Controller
 
     public function getUserSchedule(Request $request){
         // Get Auth User
-        $user = $this->getAuthUser();
+        $user =  User::find(auth::user()->id);
         $schedules = $user->schedules()->orderBy('date')->get();
 
         if (count($schedules)==0) {
@@ -305,18 +305,6 @@ class ScheduleController extends Controller
 
         if($validator->fails()) {
             response()->json($validator->messages())->send();
-            exit;
-        }
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
             exit;
         }
     }
