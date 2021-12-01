@@ -19,8 +19,6 @@ Route::get('/', function () {
     return response()->json();
 });
 
-Route::get('/cektoken', 'AuthController@checktoken');
-
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login');
