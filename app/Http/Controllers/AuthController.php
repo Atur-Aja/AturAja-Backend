@@ -77,6 +77,16 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
+    /**
+     * Refresh a token.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function refresh()
+    {
+        return $this->respondWithToken(auth()->refresh());   
+    }
+
     public function logout()
     {
         auth()->logout();
@@ -113,15 +123,5 @@ class AuthController extends Controller
             'token_type' => 'bearer',
             'expires_in' => auth()->factory()->getTTL() * 60
         ]);
-    }
-
-    // Check token validity
-    public function checktoken()
-    {
-        if (Auth::check()) {
-            return response()->json([
-                'message' => 'Valid'
-            ], 200);
-        }
     }
 }

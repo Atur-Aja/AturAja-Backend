@@ -3,20 +3,15 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Carbon\Carbon;
+use Illuminate\Validation\Rule;
 use App\Models\User;
 use App\Models\Schedule;
 
 class ScheduleController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
-
     /**
      * Display a listing of the resource.
      *
@@ -37,11 +32,11 @@ class ScheduleController extends Controller
      */
     public function store(Request $request)
     {
-        // Validate Request
-        $this->ValidateRequest();
-
         // Get Auth User
         $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->ValidateRequest();        
 
         // Create Schedule
         try {
@@ -49,9 +44,8 @@ class ScheduleController extends Controller
                 'title'=>request('title'),
                 'description'=>request('description'),
                 'location'=>request('location'),
-                'start_date'=>request('start_date'),
+                'date'=>request('date'),
                 'start_time'=>request('start_time'),
-                'end_date'=>request('end_date'),
                 'end_time'=>request('end_time'),
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
@@ -60,6 +54,29 @@ class ScheduleController extends Controller
             $schedule->users()->attach(Auth::user()->id);
             if($request->has('friends')){
                 $schedule->users()->attach(request('friends'));
+            }            
+            
+            if(strcmp(request('repeat'), 'daily') == 0){
+                $date = $schedule->date;
+                
+                for ($x = 0; $x < 7; $x++) {
+                    $date = date('Y-m-d', strtotime($schedule->date . ' +1 day'));
+                    $schedule = Schedule::create([
+                        'title'=>request('title'),
+                        'description'=>request('description'),
+                        'location'=>request('location'),
+                        'date'=>$date,
+                        'start_time'=>request('start_time'),
+                        'end_time'=>request('end_time'),
+                        'notification'=>request('notification'),
+                        'repeat'=>request('repeat')
+                    ]);
+        
+                    $schedule->users()->attach(Auth::user()->id);
+                    if($request->has('friends')){
+                        $schedule->users()->attach(request('friends'));
+                    }
+                }               
             }
 
             return response()->json([
@@ -111,11 +128,11 @@ class ScheduleController extends Controller
      */
     public function update(Request $request, $id)
     {
-        // Validate Request
-        $this->ValidateRequest();
-
         // Get Auth User
         $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->ValidateRequest();        
 
         // Update Schedule
         try {
@@ -130,9 +147,8 @@ class ScheduleController extends Controller
                 'title'=>request('title'),
                 'description'=>request('description'),
                 'location'=>request('location'),
-                'start_date'=>request('start_date'),
+                'date'=>request('date'),
                 'start_time'=>request('start_time'),
-                'end_date'=>request('end_date'),
                 'end_time'=>request('end_time'),
                 'notification'=>request('notification'),
                 'repeat'=>request('repeat')
@@ -185,6 +201,9 @@ class ScheduleController extends Controller
     }
 
     public function matchSchedule(Request $request){
+        // Get Auth User
+        $user = $this->getAuthUser();
+
         // Validate Request
         $validator = Validator::make(request()->all(), [            
             'date' => 'required|date_format:Y-m-d',
@@ -195,10 +214,7 @@ class ScheduleController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }
-
-        // Get Auth User
-        $user = $this->getAuthUser();       
+        }               
 
         $scheduleArray = [];
 
@@ -216,8 +232,7 @@ class ScheduleController extends Controller
 
             // Get All Schedule on that date
             foreach ($schedules as $schedule) {
-                if (strtotime($schedule->start_date) <= strtotime($request->date) 
-                    && strtotime($schedule->end_date) >= strtotime($request->date)) {
+                if (strtotime($schedule->date) == strtotime($request->date)) {
                     
                     // Convert time string to time block
                     $startTime = $this->stringToTimeBlock($schedule->start_time, 15, "bawah");
@@ -248,7 +263,7 @@ class ScheduleController extends Controller
     public function getUserSchedule(Request $request){
         // Get Auth User
         $user = $this->getAuthUser();
-        $schedules = $user->schedules()->orderBy('start_date')->get();
+        $schedules = $user->schedules()->orderBy('date')->get();
 
         if (count($schedules)==0) {
             return response()->json([
@@ -277,26 +292,14 @@ class ScheduleController extends Controller
             'title' => 'required|string|min:3|max:32',
             'description' => 'max:128',
             'location' => 'max:128',
-            'start_date' => 'required|date_format:Y-m-d',
+            'date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',
-            'end_date' => 'required|date_format:Y-m-d',
             'end_time' => 'required|date_format:H:i|after:start_time',
+            'repeat' => ['required', Rule::in(['daily', 'weekly', 'monthly', 'never'])],
         ]);
 
         if($validator->fails()) {
             response()->json($validator->messages())->send();
-            exit;
-        }
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
             exit;
         }
     }
@@ -346,11 +349,22 @@ class ScheduleController extends Controller
             }
         }
         
-        $freeTimes = $this->checkFreeTimes($timeTable, $endTime, 96, $scheduleTimeLength);
-        if(count($freeTimes)<=0){
-            $freeTimes = $this->checkFreeTimes($timeTable, 0, $startTime, $scheduleTimeLength);
+        // Check if the time is free
+        $freeTimes = $this->checkFreeTimes($timeTable, $startTime, $endTime, $scheduleTimeLength);
+        
+        // Check free time on work hours
+        if(count($freeTimes)>0){
+            return $freeTimes;            
+        }else{
+            $freeTimes = $this->checkFreeTimes($timeTable, 36, 68, $scheduleTimeLength);
         }
-        return $freeTimes;
+        
+        // Check free time on entire day
+        if(count($freeTimes)>0){
+            return $freeTimes;            
+        }else{
+            $freeTimes = $this->checkFreeTimes($timeTable, 0, 96, $scheduleTimeLength);
+        }
     }
 
     private function checkFreeTimes($timeTable, $batasBawah, $batasAtas, $scheduleTimeLength){
@@ -400,5 +414,17 @@ class ScheduleController extends Controller
         }else{
             return $freeTimes;
         }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
+            exit;
+        }   
     }
 }

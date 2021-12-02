@@ -12,16 +12,6 @@ use Illuminate\Support\Facades\Auth;
 class TodoController extends Controller
 {
     /**
-     * Instantiate a new controller instance.
-     *
-     * @return void
-     */
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
-
-    /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -29,12 +19,14 @@ class TodoController extends Controller
      */
     public function store(Request $request)
     {
+        $user = $this->getAuthUser();
+        
         $this->validate($request, [
             'task_id'=> 'required',
             'todos'=> 'required',
         ]);
-
-        $task = User::find(auth::user()->id)->tasks()->find($request->task_id);
+        
+        $task = $user->tasks()->find($request->task_id);
 
         try {
             foreach($request->todos as $value) {
@@ -66,6 +58,8 @@ class TodoController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = $this->getAuthUser();
+        
         try {
             $todo = Todo::find($id);
             if (!empty($todo)) {
@@ -101,6 +95,8 @@ class TodoController extends Controller
      */
     public function destroy($id)
     {
+        $user = $this->getAuthUser();
+        
         try {
             $todo = Todo::find($id);
             if (!empty($todo)) {
@@ -121,5 +117,17 @@ class TodoController extends Controller
                 'exception' => $e
             ], 409);
         }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
+            exit;
+        }   
     }
 }

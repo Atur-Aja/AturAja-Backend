@@ -19,6 +19,8 @@ class FriendController extends Controller
 
     public function getFriendsByUsername(Request $request)
     {
+        $user = $this->getAuthUser();
+        
         // Validate Request
         $validator = Validator::make($request->all(), [            
             'username' => 'required|string|min:1|max:16',
@@ -26,9 +28,8 @@ class FriendController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }
+        }        
         
-        $user = $this->getAuthUser();
         return $user->friends()
             ->where('friends.status', 'accepted')
             ->where('users.username', 'like', '%'.$request->username."%")
@@ -60,6 +61,13 @@ class FriendController extends Controller
         if($user_id == $friend_id){
             return response()->json([
                 'message' => 'can\'t invite yourself'
+            ], 409);
+        }
+
+        // Check if friend req exist
+        if($user->friends()->where('second_user_id', $friend_id)->exists()){
+            return response()->json([
+                'message' => 'you have invited him or her'
             ], 409);
         }
 
