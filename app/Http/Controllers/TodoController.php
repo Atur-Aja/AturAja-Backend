@@ -60,12 +60,14 @@ class TodoController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = $this->getAuthUser();
+        
         try {
             $todo = Todo::find($id);
             if (!empty($todo)) {
                 $todo->name = is_null($request->name) ? $todo->name : $request->name;
                 $todo->status = is_null($request->status) ? $todo->status : $request->status;
-                $todo->update_by = is_null($request->update_by) ? $todo->update_by : $request->update_by;
+                $todo->update_by = $user->username;
                 $todo->save();
 
                 return response()->json([

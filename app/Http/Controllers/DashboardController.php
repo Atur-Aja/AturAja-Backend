@@ -59,10 +59,10 @@ class DashboardController extends Controller
     public function sortSchedule(Request $request)
     {
         try {
-            $user = $this->getAuthUser(); 
+            $user = $this->getAuthUser();
             $schedules = $user->schedules()->get();
             foreach ($schedules as $schedules) {
-                if (strtotime($schedules->date) <= strtotime($request->date)) {
+                if (strtotime($schedules->date) == strtotime($request->date)) {
                     $schedule[] = $schedules;
                 }
             }
