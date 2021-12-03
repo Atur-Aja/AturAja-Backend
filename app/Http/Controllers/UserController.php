@@ -8,10 +8,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
+use App\Http\Traits\AuthUserTrait;
 
 
 class UserController extends Controller
-{
+{    
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function searchUser(Request $request)
     { 
         // Validate Request
@@ -45,9 +53,6 @@ class UserController extends Controller
     
     public function profile(Request $request, $username)
     {         
-        // Get Auth User
-        $user = $this->getAuthUser();
-        
         try {
             return User::where('username', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
@@ -95,17 +100,5 @@ class UserController extends Controller
                 'exception' => $e
             ], 422);
         }       
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
-    }
+    }    
 }

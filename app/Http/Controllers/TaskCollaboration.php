@@ -7,6 +7,14 @@ use Illuminate\Http\Request;
 
 class TaskCollaboration extends Controller
 {
+    
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function see(Request $request)
     {
         $taskId = $request->task_id;

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\AuthUserTrait;
 use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
@@ -12,11 +13,13 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class TaskController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function index()
     {
         return response()->json([
@@ -185,17 +188,5 @@ class TaskController extends Controller
                 'exception' => $e
             ], 409);
         }
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
-    }
+    }    
 }
