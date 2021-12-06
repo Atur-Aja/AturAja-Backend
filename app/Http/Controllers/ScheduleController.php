@@ -31,49 +31,32 @@ class ScheduleController extends Controller
     {
         // Get Auth User
         $user = $this->getAuthUser();
+        $userId = $user->id;
         
         // Validate Request
         $this->ValidateRequest();        
 
         // Create Schedule
         try {
-            $schedule = Schedule::create([
-                'title'=>request('title'),
-                'description'=>request('description'),
-                'location'=>request('location'),
-                'date'=>request('date'),
-                'start_time'=>request('start_time'),
-                'end_time'=>request('end_time'),
-                'notification'=>request('notification'),
-                'repeat'=>request('repeat')
-            ]);
-
-            $schedule->users()->attach($user->id);
-            if($request->has('friends')){
-                $schedule->users()->attach(request('friends'));
-            }            
+            // dd($request->date);
+            $schedule = $this->createSchedule($request, $request->date, $userId);
+            $date = $schedule->date;                        
             
-            if(strcmp(request('repeat'), 'daily') == 0){
-                $date = $schedule->date;
-                
+            if(strcmp(request('repeat'), 'daily') == 0){                               
                 for ($x = 0; $x < 7; $x++) {
                     $date = date('Y-m-d', strtotime($schedule->date . ' +1 day'));
-                    $schedule = Schedule::create([
-                        'title'=>request('title'),
-                        'description'=>request('description'),
-                        'location'=>request('location'),
-                        'date'=>$date,
-                        'start_time'=>request('start_time'),
-                        'end_time'=>request('end_time'),
-                        'notification'=>request('notification'),
-                        'repeat'=>request('repeat')
-                    ]);
-        
-                    $schedule->users()->attach(Auth::user()->id);
-                    if($request->has('friends')){
-                        $schedule->users()->attach(request('friends'));
-                    }
+                    $schedule = $this->createSchedule($request, $date, $userId);                    
                 }               
+            }else if(strcmp(request('repeat'), 'weekly') == 0){              
+                for ($x = 0; $x < 4; $x++) {
+                    $date = date('Y-m-d', strtotime($schedule->date . ' +1 week'));
+                    $schedule = $this->createSchedule($request, $date, $userId);                    
+                }
+            }else if(strcmp(request('repeat'), 'monthly') == 0){                
+                for ($x = 0; $x < 6; $x++) {
+                    $date = date('Y-m-d', strtotime($schedule->date . ' +1 month'));
+                    $schedule = $this->createSchedule($request, $date, $userId);                    
+                }
             }
 
             return response()->json([
@@ -127,21 +110,8 @@ class ScheduleController extends Controller
                 ], 403);
             }
 
-            $schedule->update([
-                'title'=>request('title'),
-                'description'=>request('description'),
-                'location'=>request('location'),
-                'date'=>request('date'),
-                'start_time'=>request('start_time'),
-                'end_time'=>request('end_time'),
-                'notification'=>request('notification'),
-                'repeat'=>request('repeat')
-            ]);
-
-            if($request->has('friends')){
-                $schedule->users()->sync(request('friends'));
-            }
-            $schedule->users()->attach(Auth::user()->id);
+            $this->store($request);
+            $this->destroy($schedule->id);            
 
             return response()->json([
                 'message' => 'schedule updated successfully'
@@ -160,16 +130,26 @@ class ScheduleController extends Controller
 
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
+
             if($schedule==null){
                 return response()->json([
                     'message' => 'you have no access',
                 ], 403);
             }
 
-            $schedule->users()->detach();
-            $schedule->delete();
+            $schedules = $user->schedules()
+                        ->where('schedules.title', $schedule->title)
+                        ->where('schedules.repeat', $schedule->repeat)
+                        ->where('schedules.updated_at', $schedule->updated_at)
+                        ->get(['schedules.id']);
+            
+            foreach ($schedules as $schedule){
+                $schedule->users()->detach();
+                $schedule->delete();
+            }           
+
             return response()->json([
-                'message' => 'schedule deleted successfully'
+                'message' => 'schedule deleted successfully',
             ], 202);
         } catch (ModelNotFoundException $e) {
             return response()->json([
@@ -262,6 +242,44 @@ class ScheduleController extends Controller
         }
 
         return $user->schedules()->get();
+    }
+
+    private function createSchedule(Request $request, $date, $userId){
+        $schedule = Schedule::create([
+            'title'=>request('title'),
+            'description'=>request('description'),
+            'location'=>request('location'),
+            'date'=>$date,
+            'start_time'=>request('start_time'),
+            'end_time'=>request('end_time'),
+            'notification'=>request('notification'),
+            'repeat'=>request('repeat')
+        ]);
+
+        $schedule->users()->attach($userId);
+        if($request->has('friends')){
+            $schedule->users()->attach(request('friends'));
+        }
+
+        return $schedule;
+    }
+
+    private function updateSchedule(Request $request, $schedule){
+        $schedule->update([
+            'title'=>request('title'),
+            'description'=>request('description'),
+            'location'=>request('location'),
+            'date'=>request('date'),
+            'start_time'=>request('start_time'),
+            'end_time'=>request('end_time'),
+            'notification'=>request('notification'),
+            'repeat'=>request('repeat')
+        ]);
+
+        if($request->has('friends')){
+            $schedule->users()->sync(request('friends'));
+        }
+        $schedule->users()->attach(Auth::user()->id);
     }
 
     private function ValidateRequest()
