@@ -9,6 +9,7 @@ use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
@@ -54,11 +55,12 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $user = $this->getAuthUser();
-        
+
         $this->validate($request, [
             'title'=> 'required',
             'date'=> 'required',
             'time'=> 'required',
+            'priority' => ['required', Rule::in(['0', '1', '2', '3'])],
         ]);
 
         try {
@@ -69,7 +71,7 @@ class TaskController extends Controller
                 'time' => $request->time,
                 'priority' => $request->priority,
             ]);
-            
+
             $task->users()->attach($user);
 
             //create todo
@@ -196,6 +198,6 @@ class TaskController extends Controller
                 'message' => 'Not authenticated, please login first'
             ], 401)->send();
             exit;
-        }   
+        }
     }
 }

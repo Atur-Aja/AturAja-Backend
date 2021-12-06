@@ -79,7 +79,7 @@ Route::group(['prefix' => 'auth'], function ($router) {
 });
 
 Route::group(['prefix' => 'dashboard'], function ($router) {
-    Route::post('task', 'DashboardController@sortTask');
+    Route::post('task', 'DashboardController@sortTas');
     Route::post('schedule', 'DashboardController@sortSchedule');
 });
 
@@ -111,6 +111,10 @@ Route::group(['prefix' => 'tasks'], function ($router) {
     Route::get('/see', 'TaskCollaboration@see');
     Route::delete('/remove', 'TaskCollaboration@remove');
     Route::delete('/update', 'TaskCollaboration@update');
+});
+
+Route::group(['prefix' => 'schedule'], function ($router) {
+    Route::post('/update/{id}', 'UpdateScheduleController@perbarui');
 });
 
 Route::apiResource('schedules', 'ScheduleController');

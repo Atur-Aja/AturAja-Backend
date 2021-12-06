@@ -10,32 +10,35 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    public function sortTask(Request $request)
+    public function sortTas(Request $request)
     {
         try {
             $user = $this->getAuthUser();
-            $task = $user->tasks()->where('date', $request->date)->get();
-            if (count($task)==0) {
+            $tasks = $user->tasks()->where('date', $request->date)->get();
+            foreach ($tasks as $task) {
+                if (strtotime($task->date) == strtotime($request->date)) {
+                    $taskes[] = $task;
+                }
+            }
+            if (empty($taskes)) {
                 return response()->json([
                     'message' => 'no task'
                 ], 200);
             } else {
-                foreach ($task as $task) {
-                    $taskes[] = $task;
-                }
                 $priority = array_column($taskes, 'priority');
                 array_multisort($priority, SORT_DESC, $taskes);
+
                 foreach ($taskes as $task) {
                     $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
                     $todo = Task::find($task->id)->todos()->get();
                     if (!count($todo) == 0) {
-                        $tasks[] = ["task" => $task, "todo" => $todo, "member" => $member];
+                        $tasksTodo[] = ["task" => $task, "todo" => $todo, "member" => $member];
                     } else {
-                        $tasks[] = ["task" => $task, "member" => $member];
+                        $tasksTodo[] = ["task" => $task, "member" => $member];
                     }
                 }
                 return response()->json([
-                    "tasks" => $tasks
+                    "tasks" => $tasksTodo
                 ], 200);
             }
         } catch (\Exception $e) {
@@ -51,10 +54,10 @@ class DashboardController extends Controller
     public function sortSchedule(Request $request)
     {
         try {
-            $user = $this->getAuthUser(); 
-            $schedules = $user->schedules()->get();
+            $user = $this->getAuthUser();
+            $schedules = $user->schedules()->where('date', $request->date)->get();
             foreach ($schedules as $schedules) {
-                if (strtotime($schedules->date) <= strtotime($request->date)) {
+                if ($schedules->date == $request->date) {
                     $schedule[] = $schedules;
                 }
             }
@@ -63,8 +66,8 @@ class DashboardController extends Controller
                     'message' => 'no schedule'
                 ], 200);
             } else {
-                $start_time = array_column($schedule, 'start_time');
-                array_multisort($start_time, SORT_ASC, $schedule);
+//                $start_time = array_column($schedule, 'start_time');
+//                array_multisort($start_time, SORT_ASC, $schedule);
 
                 foreach ($schedule as $schedule) {
                     $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
@@ -94,6 +97,6 @@ class DashboardController extends Controller
                 'message' => 'Not authenticated, please login first'
             ], 401)->send();
             exit;
-        }   
+        }
     }
 }
