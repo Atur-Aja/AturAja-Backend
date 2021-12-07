@@ -113,7 +113,7 @@ Route::group(['prefix' => 'tasks'], function ($router) {
     Route::delete('/update', 'TaskCollaboration@update');
 });
 
-Route::group(['prefix' => 'schedule'], function ($router) {
+Route::group(['prefix' => 'schedules'], function ($router) {
     Route::post('/update/{id}', 'UpdateScheduleController@perbarui');
 });
 

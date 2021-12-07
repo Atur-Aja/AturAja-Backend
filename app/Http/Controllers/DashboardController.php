@@ -57,7 +57,7 @@ class DashboardController extends Controller
             $user = $this->getAuthUser();
             $schedules = $user->schedules()->where('date', $request->date)->get();
             foreach ($schedules as $schedules) {
-                if ($schedules->date == $request->date) {
+                if (strtotime($schedules->date) == strtotime($request->date)) {
                     $schedule[] = $schedules;
                 }
             }
@@ -66,14 +66,11 @@ class DashboardController extends Controller
                     'message' => 'no schedule'
                 ], 200);
             } else {
-//                $start_time = array_column($schedule, 'start_time');
-//                array_multisort($start_time, SORT_ASC, $schedule);
+                $start_time = array_column($schedule, 'start_time');
+                array_multisort($start_time, SORT_ASC, $schedule);
 
                 foreach ($schedule as $schedule) {
                     $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
-                    if (count($member)==1) {
-                        $member = null;
-                    }
                     $scheduleMember[] = ["schedule" => $schedule, "member" => $member];
                 }
                 return response()->json($scheduleMember, 200);
