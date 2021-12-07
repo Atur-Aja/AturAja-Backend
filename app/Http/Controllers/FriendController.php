@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\AuthUserTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +11,12 @@ use App\Models\User;
 
 class FriendController extends Controller
 {
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
     
     public function getUserFriends()
     {
@@ -167,15 +174,5 @@ class FriendController extends Controller
         }
     }
     
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
-    }
+    
 }

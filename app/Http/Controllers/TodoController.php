@@ -8,15 +8,17 @@ use App\Models\User;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Traits\AuthUserTrait;
 
 class TodoController extends Controller
 {
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function store(Request $request)
     {
         $user = $this->getAuthUser();
@@ -65,7 +67,7 @@ class TodoController extends Controller
             if (!empty($todo)) {
                 $todo->name = is_null($request->name) ? $todo->name : $request->name;
                 $todo->status = is_null($request->status) ? $todo->status : $request->status;
-                $todo->update_by = is_null($request->update_by) ? $todo->update_by : $request->update_by;
+                $todo->update_by = $user->username;
                 $todo->save();
 
                 return response()->json([
@@ -95,8 +97,6 @@ class TodoController extends Controller
      */
     public function destroy($id)
     {
-        $user = $this->getAuthUser();
-        
         try {
             $todo = Todo::find($id);
             if (!empty($todo)) {
@@ -117,17 +117,5 @@ class TodoController extends Controller
                 'exception' => $e
             ], 409);
         }
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
-    }
+    }    
 }

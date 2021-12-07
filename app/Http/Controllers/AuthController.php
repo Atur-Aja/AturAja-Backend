@@ -11,11 +11,6 @@ use App\Rules\IsValidPassword;
 
 class AuthController extends Controller
 {
-    /**
-     * Create a new AuthController instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
@@ -47,14 +42,8 @@ class AuthController extends Controller
         }
     }
 
-    /**
-     * Get a JWT via given credentials.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function login()
     {
-
         $loginField = request()->input('login');
         $credentials = null;
 
@@ -77,11 +66,6 @@ class AuthController extends Controller
         return $this->respondWithToken($token);
     }
 
-    /**
-     * Refresh a token.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function refresh()
     {
         return $this->respondWithToken(auth()->refresh());   
@@ -96,25 +80,6 @@ class AuthController extends Controller
         ], 200);
     }
 
-    public function profile(Request $request, $username)
-    {
-        // Get User
-        try {
-            return User::where('username', $username)->firstOrFail();
-        } catch (ModelNotFoundException $e) {
-            return response()->json([
-                'message' => 'user not found'
-            ], 404);
-        }
-    }
-
-    /**
-     * Get the token array structure.
-     *
-     * @param  string $token
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     protected function respondWithToken($token)
     {
         return response()->json([

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\AuthUserTrait;
 use App\Models\Schedule;
 use App\Models\Task;
 use App\Models\User;
@@ -10,6 +11,13 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function sortTask(Request $request)
     {
         try {
@@ -51,10 +59,10 @@ class DashboardController extends Controller
     public function sortSchedule(Request $request)
     {
         try {
-            $user = $this->getAuthUser(); 
+            $user = $this->getAuthUser();
             $schedules = $user->schedules()->get();
             foreach ($schedules as $schedules) {
-                if (strtotime($schedules->date) <= strtotime($request->date)) {
+                if (strtotime($schedules->date) == strtotime($request->date)) {
                     $schedule[] = $schedules;
                 }
             }
@@ -83,17 +91,5 @@ class DashboardController extends Controller
                 'exception' => $e
             ], 409);
         }
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
     }
 }

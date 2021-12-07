@@ -17,6 +17,9 @@ class JwtMiddleware
     {
         try {
             $user = JWTAuth::parseToken()->authenticate();
+            if (!$user) {
+                return response()->json(['user_not_found'], 404);
+            }
         } catch (\Exception $e) {
             if ($e instanceof \Tymon\JWTAuth\Exceptions\TokenInvalidException){
                 return response()->json(['status' => 'Token is Invalid'], 401);
@@ -25,7 +28,8 @@ class JwtMiddleware
             }else{
                 return response()->json(['status' => 'Authorization Token not found'], 401);
             }
-        }
+        }      
+
         return $next($request);
     }
 }
