@@ -10,16 +10,17 @@ use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
     use AuthUserTrait;
-    
+
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
-    
+
     public function index()
     {
         return response()->json([
@@ -57,11 +58,12 @@ class TaskController extends Controller
     public function store(Request $request)
     {
         $user = $this->getAuthUser();
-        
+
         $this->validate($request, [
             'title'=> 'required',
             'date'=> 'required',
             'time'=> 'required',
+            'priority' => ['required', Rule::in(['0', '1', '2', '3'])],
         ]);
 
         try {
@@ -72,7 +74,7 @@ class TaskController extends Controller
                 'time' => $request->time,
                 'priority' => $request->priority,
             ]);
-            
+
             $task->users()->attach($user);
 
             //create todo
@@ -188,5 +190,17 @@ class TaskController extends Controller
                 'exception' => $e
             ], 409);
         }
-    }    
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
+            exit;
+        }
+    }
 }
