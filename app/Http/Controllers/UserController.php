@@ -8,10 +8,18 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Models\User;
+use App\Http\Traits\AuthUserTrait;
 
 
 class UserController extends Controller
-{
+{    
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+    
     public function searchUser(Request $request)
     { 
         // Validate Request
@@ -25,10 +33,15 @@ class UserController extends Controller
         
         // Get Auth User
         $user = $this->getAuthUser();
+
+        // Get User Friends
+        $friends = $user->friends()->where('friends.status', 'accepted')->get(['username']);
         
         $username = $request->username;        
         $users = User::where('username', 'like', '%'.$username."%")
-                    ->where('username', '!=', $user->username)->get(['id','username', 'photo']);
+                    ->where('username', '!=', $user->username)
+                    ->whereNotIn('username', $friends)
+                    ->get(['id','username', 'photo']);
         
         foreach ($users as $user) {
             $user_photo = $user->photo;
@@ -40,9 +53,6 @@ class UserController extends Controller
     
     public function profile(Request $request, $username)
     {         
-        // Get Auth User
-        $user = $this->getAuthUser();
-        
         try {
             return User::where('username', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
@@ -53,6 +63,9 @@ class UserController extends Controller
     }
     
     public function setup(Request $request){
+        // Get User
+        $user = $this->getAuthUser();
+
         // Validate request
         $validator = Validator::make($request->all(), [            
             'fullname' => 'required|string|min:3|max:32',
@@ -62,10 +75,7 @@ class UserController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }
-
-        // Get User
-        $user = $this->getAuthUser();               
+        }                     
 
         // Save Image
         $imgName = $user->username . "." . $request->photo->extension();
@@ -90,15 +100,5 @@ class UserController extends Controller
                 'exception' => $e
             ], 422);
         }       
-    }
-
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json(['message' => 'Not authenticated, please login first'])->send();
-            exit;
-        }   
-    }
+    }    
 }

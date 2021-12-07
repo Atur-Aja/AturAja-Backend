@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Traits\AuthUserTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
@@ -10,6 +11,12 @@ use App\Models\User;
 
 class FriendController extends Controller
 {
+    use AuthUserTrait;
+    
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
     
     public function getUserFriends()
     {
@@ -19,6 +26,8 @@ class FriendController extends Controller
 
     public function getFriendsByUsername(Request $request)
     {
+        $user = $this->getAuthUser();
+        
         // Validate Request
         $validator = Validator::make($request->all(), [            
             'username' => 'required|string|min:1|max:16',
@@ -26,9 +35,8 @@ class FriendController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }
+        }        
         
-        $user = $this->getAuthUser();
         return $user->friends()
             ->where('friends.status', 'accepted')
             ->where('users.username', 'like', '%'.$request->username."%")
@@ -60,6 +68,13 @@ class FriendController extends Controller
         if($user_id == $friend_id){
             return response()->json([
                 'message' => 'can\'t invite yourself'
+            ], 409);
+        }
+
+        // Check if friend req exist
+        if($user->friends()->where('second_user_id', $friend_id)->exists()){
+            return response()->json([
+                'message' => 'you have invited him or her'
             ], 409);
         }
 
@@ -159,15 +174,5 @@ class FriendController extends Controller
         }
     }
     
-    private function getAuthUser()
-    {
-        try{
-            return $user = auth('api')->userOrFail();
-        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
-            response()->json([
-                'message' => 'Not authenticated, please login first'
-            ], 401)->send();
-            exit;
-        }   
-    }
+    
 }

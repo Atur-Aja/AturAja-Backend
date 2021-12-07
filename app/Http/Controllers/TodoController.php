@@ -8,33 +8,27 @@ use App\Models\User;
 use GuzzleHttp\Promise\Create;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Http\Traits\AuthUserTrait;
 
 class TodoController extends Controller
 {
-    /**
-     * Instantiate a new controller instance.
-     *
-     * @return void
-     */
+    use AuthUserTrait;
+    
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
+    
     public function store(Request $request)
     {
+        $user = $this->getAuthUser();
+        
         $this->validate($request, [
             'task_id'=> 'required',
             'todos'=> 'required',
         ]);
-
-        $task = User::find(auth::user()->id)->tasks()->find($request->task_id);
+        
+        $task = $user->tasks()->find($request->task_id);
 
         try {
             foreach($request->todos as $value) {
@@ -66,11 +60,14 @@ class TodoController extends Controller
      */
     public function update(Request $request, $id)
     {
+        $user = $this->getAuthUser();
+        
         try {
             $todo = Todo::find($id);
             if (!empty($todo)) {
                 $todo->name = is_null($request->name) ? $todo->name : $request->name;
                 $todo->status = is_null($request->status) ? $todo->status : $request->status;
+                $todo->update_by = $user->username;
                 $todo->save();
 
                 return response()->json([
@@ -120,5 +117,5 @@ class TodoController extends Controller
                 'exception' => $e
             ], 409);
         }
-    }
+    }    
 }

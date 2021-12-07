@@ -5,28 +5,22 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\Controller;
+use App\Http\Traits\AuthUserTrait;
 use App\Models\Task;
 use App\Models\Todo;
 use App\Models\User;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Validation\Rule;
 
 class TaskController extends Controller
 {
-    /**
-     * Instantiate a new controller instance.
-     *
-     * @return void
-     */
+    use AuthUserTrait;
+
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
 
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
     public function index()
     {
         return response()->json([
@@ -34,9 +28,10 @@ class TaskController extends Controller
         ], 403);
     }
 
-    public function getUserTask(Request $request)
+    public function getUserTask()
     {
-        $task = User::find(auth::user()->id)->tasks()->orderBy('date')->get();
+        $user = $this->getAuthUser();
+        $task = $user->tasks()->orderBy('date')->get();
         if (count($task)==0) {
             return response()->json([
                 "message" => "no tasks"
@@ -62,10 +57,13 @@ class TaskController extends Controller
 
     public function store(Request $request)
     {
+        $user = $this->getAuthUser();
+
         $this->validate($request, [
             'title'=> 'required',
             'date'=> 'required',
             'time'=> 'required',
+            'priority' => ['required', Rule::in(['0', '1', '2', '3'])],
         ]);
 
         try {
@@ -74,9 +72,9 @@ class TaskController extends Controller
                 'description' => $request->description,
                 'date' => $request->date,
                 'time' => $request->time,
+                'priority' => $request->priority,
             ]);
 
-            $user = User::find(Auth::user()->id);
             $task->users()->attach($user);
 
             //create todo
@@ -111,7 +109,8 @@ class TaskController extends Controller
 
     public function show($id)
     {
-        $task = User::find(auth::user()->id)->tasks()->get()->where('id', $id);
+        $user = $this->getAuthUser();
+        $task = $user->tasks()->get()->where('id', $id);
         if (count($task)==0) {
             return response()->json([
                 "message" => "task not found"
@@ -132,15 +131,20 @@ class TaskController extends Controller
     public function update(Request $request, $id)
     {
         try {
-            $task = User::find(auth::user()->id)->tasks()->get();
+            $user = $this->getAuthUser();
+            $task = $user->tasks()->get();
             $task = $task->find($id);
             if (!empty($task)) {
                 $task->title = is_null($request->title) ? $task->title : $request->title;
                 $task->description = is_null($request->description) ? $task->description : $request->description;
                 $task->date = is_null($request->date) ? $task->date : $request->date;
                 $task->time = is_null($request->time) ? $task->time : $request->time;
+                $task->priority = is_null($request->priority) ? $task->priority : $request->priority;
                 $task->status = is_null($request->status) ? $task->status : $request->status;
                 $task->save();
+
+                $friends = $request->friends;
+                $task->users()->sync($friends);
 
                 return response()->json([
                     "message" => "task updated successfully"
@@ -163,7 +167,7 @@ class TaskController extends Controller
     public function destroy($id)
     {
         try {
-            $user = User::find(auth::user()->id);
+            $user = $this->getAuthUser();
             $task = Task::find($id);
 
             if (!empty($task)) {
@@ -185,6 +189,18 @@ class TaskController extends Controller
                 'description' => 'delete task failed!',
                 'exception' => $e
             ], 409);
+        }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
+            exit;
         }
     }
 }
