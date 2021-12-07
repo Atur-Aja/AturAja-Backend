@@ -11,39 +11,35 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
-    use AuthUserTrait;
-    
-    public function __construct()
-    {
-        $this->middleware('jwt.verify');
-    }
-    
-    public function sortTask(Request $request)
+    public function sortTas(Request $request)
     {
         try {
             $user = $this->getAuthUser();
-            $task = $user->tasks()->where('date', $request->date)->get();
-            if (count($task)==0) {
+            $tasks = $user->tasks()->where('date', $request->date)->get();
+            foreach ($tasks as $task) {
+                if (strtotime($task->date) == strtotime($request->date)) {
+                    $taskes[] = $task;
+                }
+            }
+            if (empty($taskes)) {
                 return response()->json([
                     'message' => 'no task'
                 ], 200);
             } else {
-                foreach ($task as $task) {
-                    $taskes[] = $task;
-                }
                 $priority = array_column($taskes, 'priority');
                 array_multisort($priority, SORT_DESC, $taskes);
+
                 foreach ($taskes as $task) {
                     $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
                     $todo = Task::find($task->id)->todos()->get();
                     if (!count($todo) == 0) {
-                        $tasks[] = ["task" => $task, "todo" => $todo, "member" => $member];
+                        $tasksTodo[] = ["task" => $task, "todo" => $todo, "member" => $member];
                     } else {
-                        $tasks[] = ["task" => $task, "member" => $member];
+                        $tasksTodo[] = ["task" => $task, "member" => $member];
                     }
                 }
                 return response()->json([
-                    "tasks" => $tasks
+                    "tasks" => $tasksTodo
                 ], 200);
             }
         } catch (\Exception $e) {
@@ -60,7 +56,7 @@ class DashboardController extends Controller
     {
         try {
             $user = $this->getAuthUser();
-            $schedules = $user->schedules()->get();
+            $schedules = $user->schedules()->where('date', $request->date)->get();
             foreach ($schedules as $schedules) {
                 if (strtotime($schedules->date) == strtotime($request->date)) {
                     $schedule[] = $schedules;
@@ -76,9 +72,6 @@ class DashboardController extends Controller
 
                 foreach ($schedule as $schedule) {
                     $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
-                    if (count($member)==1) {
-                        $member = null;
-                    }
                     $scheduleMember[] = ["schedule" => $schedule, "member" => $member];
                 }
                 return response()->json($scheduleMember, 200);
@@ -90,6 +83,18 @@ class DashboardController extends Controller
                 'description' => 'Sort Schedule Failed!',
                 'exception' => $e
             ], 409);
+        }
+    }
+
+    private function getAuthUser()
+    {
+        try{
+            return $user = auth('api')->userOrFail();
+        }catch(\Tymon\JWTAuth\Exceptions\UserNotDefinedException $e){
+            response()->json([
+                'message' => 'Not authenticated, please login first'
+            ], 401)->send();
+            exit;
         }
     }
 }
