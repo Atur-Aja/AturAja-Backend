@@ -107,6 +107,7 @@ trait TimeBlockTrait{
             array_push($freeTimes, $freeTime);
         }
 
+        // return max 3 freeTimes
         if(count($freeTimes)>3){
             return (array_slice($freeTimes,0,3));
         }else{

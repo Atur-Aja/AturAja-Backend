@@ -10,10 +10,12 @@ use Illuminate\Validation\Rule;
 use App\Models\User;
 use App\Models\Schedule;
 use App\Http\Traits\AuthUserTrait;
+use App\Http\Traits\TimeBlockTrait;
 
 class ScheduleController extends Controller
 {
     use AuthUserTrait;
+    use TimeBlockTrait;
     
     public function __construct()
     {
@@ -38,7 +40,6 @@ class ScheduleController extends Controller
 
         // Create Schedule
         try {
-            // dd($request->date);
             $schedule = $this->createSchedule($request, $request->date, $userId);
             $date = $schedule->date;                        
             
@@ -75,10 +76,11 @@ class ScheduleController extends Controller
     {
         // Get Auth User
         $user = $this->getAuthUser();
-
-        // Check ownership
+        
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
+
+            // Check ownership
             if($schedule==null){
                 return response()->json([
                     'message' => 'you have no access',
@@ -262,24 +264,6 @@ class ScheduleController extends Controller
         }
 
         return $schedule;
-    }
-
-    private function updateSchedule(Request $request, $schedule){
-        $schedule->update([
-            'title'=>request('title'),
-            'description'=>request('description'),
-            'location'=>request('location'),
-            'date'=>request('date'),
-            'start_time'=>request('start_time'),
-            'end_time'=>request('end_time'),
-            'notification'=>request('notification'),
-            'repeat'=>request('repeat')
-        ]);
-
-        if($request->has('friends')){
-            $schedule->users()->sync(request('friends'));
-        }
-        $schedule->users()->attach(Auth::user()->id);
     }
 
     private function ValidateRequest()
