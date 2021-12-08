@@ -12,47 +12,47 @@ use App\Http\Traits\AuthUserTrait;
 
 
 class UserController extends Controller
-{    
+{
     use AuthUserTrait;
-    
+
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
-    
+
     public function searchUser(Request $request)
-    { 
+    {
         // Validate Request
-        $validator = Validator::make($request->all(), [            
+        $validator = Validator::make($request->all(), [
             'username' => 'required|string|min:1|max:16',
         ]);
 
         if($validator->fails()) {
             return response()->json($validator->messages());
         }
-        
+
         // Get Auth User
         $user = $this->getAuthUser();
 
         // Get User Friends
         $friends = $user->friends()->where('friends.status', 'accepted')->get(['username']);
-        
-        $username = $request->username;        
+
+        $username = $request->username;
         $users = User::where('username', 'like', '%'.$username."%")
                     ->where('username', '!=', $user->username)
                     ->whereNotIn('username', $friends)
                     ->get(['id','username', 'photo']);
-        
+
         foreach ($users as $user) {
             $user_photo = $user->photo;
             $user->link = Storage::url($user_photo);
             }
-        
-        return $users;       
+
+        return $users;
     }
-    
+
     public function profile(Request $request, $username)
-    {         
+    {
         try {
             return User::where('username', $username)->firstOrFail();
         } catch (ModelNotFoundException $e) {
@@ -61,13 +61,13 @@ class UserController extends Controller
             ], 404);
         }
     }
-    
+
     public function setup(Request $request){
         // Get User
         $user = $this->getAuthUser();
 
         // Validate request
-        $validator = Validator::make($request->all(), [            
+        $validator = Validator::make($request->all(), [
             'fullname' => 'required|string|min:3|max:32',
             'photo' => 'required|mimes:jpg,jpeg,png|max:2048',
             'phone_number' => 'numeric|digits_between:10,16'
@@ -75,7 +75,7 @@ class UserController extends Controller
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }                     
+        }
 
         // Save Image
         $imgName = $user->username . "." . $request->photo->extension();
@@ -99,6 +99,6 @@ class UserController extends Controller
                 'message' => 'profile set up failed!',
                 'exception' => $e
             ], 422);
-        }       
-    }    
+        }
+    }
 }

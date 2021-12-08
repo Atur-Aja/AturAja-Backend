@@ -9,33 +9,34 @@ class VerificationController extends Controller
 {
     public function verify(Request $request, $id)
     {
+        auth()->loginUsingId($id);
+        $user = $request->user();
         if(!$request->hasValidSignature()) {
             return response()->json([
                 'message' => 'Invalid Email Verification URL'
             ], 400);
         }
 
-        $user = User::findOrFail($id);
-
         if(!$user->hasVerifiedEmail()) {
             $user->markEmailAsVerified();
         }
 
-        return redirect()->to('/');
+        return response()->json(['message' => 'Email Verificaton Complate'], 201);
+//        return redirect()->to('/');
     }
 
-    public function resend()
+    public function resendEmail(Request $request)
     {
-        if(auth()->user()->hasVerifiedEmail()) {
+        if($request->user()->hasVerifiedEmail()) {
             return response()->json([
-                'message' => 'Invalid Email Verification URL'
+                'message' => 'Email has been verified'
             ], 400);
         }
 
-        auth()->user()->sendEmailVerificationNotification();
+        $request->user()->sendEmailVerificationNotification();
 
         return response()->json([
-            'message' => 'Please cek your email. Successfully resend'
+            'message' => 'Successfully resend, Please cek your email.'
         ], 201);
     }
 }

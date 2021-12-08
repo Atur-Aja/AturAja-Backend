@@ -21,7 +21,8 @@ Route::get('/', function () {
 
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('register', 'AuthController@register');
-    Route::post('login', 'AuthController@login');
+    Route::post('login', 'AuthController@login')->middleware('checkuserisactive');
+//    Route::post('login', 'AuthController@login');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('logout', 'AuthController@logout');
 });
@@ -66,7 +67,7 @@ Route::group(['prefix' => 'schedules'], function ($router) {
 });
 
 Route::get('email/verify/{id}', 'VerificationController@verify')->name('verification.verify');
-Route::get('email/resend', 'VerificationController@resend')->name('verification.resend');
+Route::post('email/resend', 'VerificationController@resendEmail')->name('verification.resend');
 
 Route::apiResource('schedules', 'ScheduleController');
 Route::post('schedules/match', 'ScheduleController@matchSchedule');
