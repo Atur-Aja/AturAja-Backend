@@ -30,7 +30,7 @@ class AuthController extends Controller
                 'username' => $request->username,
                 'email' => $request->email,
                 'password' => app('hash')->make($request->password)
-            ]);
+            ])->sendEmailVerificationNotification();
             return response()->json([
                 'message' => 'user successfully created'
             ], 201);
@@ -68,7 +68,7 @@ class AuthController extends Controller
 
     public function refresh()
     {
-        return $this->respondWithToken(auth()->refresh());   
+        return $this->respondWithToken(auth()->refresh());
     }
 
     public function logout()
