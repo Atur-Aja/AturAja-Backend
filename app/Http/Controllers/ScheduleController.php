@@ -169,50 +169,75 @@ class ScheduleController extends Controller
             'date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',            
             'end_time' => 'required|date_format:H:i|after:start_time',
-            'friends' => 'required',
+            'members' => 'required',
         ]);
 
         if($validator->fails()) {
             return response()->json($validator->messages());
-        }               
+        }
 
-        $scheduleArray = [];
-
-        // Get All Participant Schedule
-        foreach($request->friends as $friendsId){
+        // Check Participant exist or not
+        foreach($request->members as $memberId){
             try {
-                $participant = User::findOrFail($friendsId);                             
+                $member = User::findOrFail($memberId);                             
             } catch (ModelNotFoundException $e) {
                 return response()->json([
-                    'message' => 'user not found'
+                    'message' => 'user not found',
+                    'user_id' => $memberId
                 ], 404);
-            }
-
-            $schedules = $participant->schedules()->get();
-
-            // Get All Schedule on that date
-            foreach ($schedules as $schedule) {
-                if (strtotime($schedule->date) == strtotime($request->date)) {
-                    
-                    // Convert time string to time block
-                    $startTime = $this->stringToTimeBlock($schedule->start_time, 15, "bawah");
-                    $endTime = $this->stringToTimeBlock($schedule->end_time, 15, "atas");
-                    array_push($scheduleArray, [$startTime, $endTime]);
-                }
             }
         }
 
-        // Get Free Times
+        // Extract Request Body
+        $members = $request->members;
         $startTime = $this->stringToTimeBlock($request->start_time, 15, "bawah");
         $endTime = $this->stringToTimeBlock($request->end_time, 15, "atas");
+        
+        $allFreeTimes = [];
+
+        // Get Free Times on the date
+        $scheduleArray = $this->getScheduleArray($members, $request->date);     
         $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
+        foreach($freeTimes as $freeTime){
+            array_unshift($freeTime , $request->date);
+            array_push($allFreeTimes, $freeTime);
+        }
+
+        // If no free times, get free times on another date        
+        for ($i=1; $i<=3; $i++) {
+            if(count($allFreeTimes)<3){
+                $date = $request->date . ' +'. $i . ' day';
+                $date = date('Y-m-d', strtotime($date));
+                // $scheduleArray = null;
+                $scheduleArray = $this->getScheduleArray($members, $date);     
+                $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
+                foreach($freeTimes as $freeTime){
+                    array_unshift($freeTime, $date);
+                    array_push($allFreeTimes, $freeTime);
+                }
+            }
+
+            if(count($allFreeTimes)<3){
+                $date = $request->date . ' -'. $i . ' day';
+                $date = date('Y-m-d', strtotime($date));
+                // $scheduleArray = null;
+                $scheduleArray = $this->getScheduleArray($members, $date);     
+                $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
+                foreach($freeTimes as $freeTime){
+                    array_unshift($freeTime, $date);
+                    array_push($allFreeTimes, $freeTime);
+                }                
+            }            
+        }          
 
         // convert timeBlock to string
         $rekomendasi = [];
-        for ($i = 0; $i < count($freeTimes); $i++) {
-            $startTime = $this->timeBlockToString($freeTimes[$i][0], 15);
-            $endTime = $this->timeBlockToString($freeTimes[$i][1], 15);
-            array_push($rekomendasi, array("start_time"=>$startTime, "end_time"=>$endTime));
+        
+        for ($i=0; $i<3; $i++) {
+            $date = $allFreeTimes[$i][0];
+            $startTime = $this->timeBlockToString($allFreeTimes[$i][1], 15);
+            $endTime = $this->timeBlockToString($allFreeTimes[$i][2], 15);
+            array_push($rekomendasi, array("date"=>$date, "start_time"=>$startTime, "end_time"=>$endTime));
         }
 
         return response()->json([
