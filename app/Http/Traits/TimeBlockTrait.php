@@ -4,7 +4,7 @@ use App\Models\User;
 
 trait TimeBlockTrait{
     private function stringToTimeBlock($time, $duration=15, $batas="bawah"){
-		$time = strtotime ($time) - strtotime("today") - 60; //Get Timestamp
+		$time = strtotime ($time) - strtotime("today"); //Get Timestamp
 		$duration = $duration * 60;
 
 		// Pembulatan Kebawah
@@ -74,7 +74,7 @@ trait TimeBlockTrait{
         // Get other freetime
         if(count($freeTimes)==0){
             $freeTimes = $this->checkFreeTimes($timeTable, 
-            max(0, ($startTime-$scheduleTimeLength)), min(96, ($endTime+$scheduleTimeLength)), $scheduleTimeLength);            
+            max(0, ($startTime-$scheduleTimeLength-1)), min(96, ($endTime+$scheduleTimeLength+1)), $scheduleTimeLength);            
         }
 
         return $freeTimes;

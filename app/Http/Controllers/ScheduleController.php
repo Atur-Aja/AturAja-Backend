@@ -169,15 +169,18 @@ class ScheduleController extends Controller
             'date' => 'required|date_format:Y-m-d',
             'start_time' => 'required|date_format:H:i',            
             'end_time' => 'required|date_format:H:i|after:start_time',
-            'members' => 'required',
+            'friends' => 'required',
         ]);
 
         if($validator->fails()) {
             return response()->json($validator->messages());
         }
 
+        $members = $request->friends;
+        array_unshift($members , $user->id);
+
         // Check Participant exist or not
-        foreach($request->members as $memberId){
+        foreach($members as $memberId){
             try {
                 $member = User::findOrFail($memberId);                             
             } catch (ModelNotFoundException $e) {
@@ -189,7 +192,7 @@ class ScheduleController extends Controller
         }
 
         // Extract Request Body
-        $members = $request->members;
+        
         $startTime = $this->stringToTimeBlock($request->start_time, 15, "bawah");
         $endTime = $this->stringToTimeBlock($request->end_time, 15, "atas");
         
