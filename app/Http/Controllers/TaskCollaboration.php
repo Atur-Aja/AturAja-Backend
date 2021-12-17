@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Models\Task;
 use Illuminate\Http\Request;
+use App\Http\Traits\AuthUserTrait;
 
 class TaskCollaboration extends Controller
 {
-    
+
     use AuthUserTrait;
-    
+
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
-    
+
     public function see(Request $request)
     {
         $taskId = $request->task_id;

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use Illuminate\Auth\Access\AuthorizationException;
+use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\Request;
 
 class VerificationController extends Controller
@@ -21,8 +23,16 @@ class VerificationController extends Controller
             $user->markEmailAsVerified();
         }
 
+//        if (!hash_equals((string) $request->route('hash'), sha1($user->getEmailForVerification()))) {
+//            throw new AuthorizationException;
+//        }
+//
+//        if ($user->markEmailAsVerified())
+//            event(new Verified($user));
+
+//        return redirect($this->redirectPath())->with('verified', true);
+
         return response()->json(['message' => 'Email Verificaton Complate'], 201);
-//        return redirect()->to('/');
     }
 
     public function resendEmail(Request $request)

@@ -2,10 +2,11 @@
 
 namespace App\Http\Middleware;
 
-use Closure;
 use App\Models\User;
+use Closure;
+use Illuminate\Support\Facades\Redirect;
 
-class CheckUserIsActive
+class CheckProfile
 {
     /**
      * Handle an incoming request.
@@ -22,13 +23,13 @@ class CheckUserIsActive
             $user = User::where('username', $request->login)->firstOrFail();
         }
 
-        if($user->email_verified_at != null)
+        if($user->photo != null)
         {
             return $next($request);
         }
 
-        return response()->json([
-            'message' => 'email not verified, pleas cek your email'
-        ], 404);
+
+        $url = 'http://localhost:3000/setup-profile';
+        return \redirect($url);
     }
 }

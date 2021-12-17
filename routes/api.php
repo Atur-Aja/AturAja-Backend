@@ -22,7 +22,6 @@ Route::get('/', function () {
 Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('register', 'AuthController@register');
     Route::post('login', 'AuthController@login')->middleware('checkuserisactive');
-//    Route::post('login', 'AuthController@login');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('logout', 'AuthController@logout');
 });
@@ -30,7 +29,10 @@ Route::group(['prefix' => 'auth'], function ($router) {
 Route::group(['prefix' => 'dashboard'], function ($router) {
     Route::post('task', 'DashboardController@sortTas');
     Route::post('schedule', 'DashboardController@sortSchedule');
+    Route::get('/cek', 'DashboardController@cekPhoto');
 });
+
+Route::get('cekPhoto', 'DashboardController@cekPhoto');
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/search', 'UserController@searchUser');

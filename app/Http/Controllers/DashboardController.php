@@ -6,6 +6,7 @@ use App\Http\Traits\AuthUserTrait;
 use App\Models\Schedule;
 use App\Models\Task;
 use App\Models\User;
+use http\Env\Response;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -81,6 +82,24 @@ class DashboardController extends Controller
                 'code' => 409,
                 'message' => 'Conflict',
                 'description' => 'Sort Schedule Failed!',
+                'exception' => $e
+            ], 409);
+        }
+    }
+
+    public function cekPhoto()
+    {
+        try {
+            $user = $this->getAuthUser();
+            if($user->photo != null) {
+                return response()->json(true, 201);
+            }
+            return response()->json(false, 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'code' => 409,
+                'message' => 'Conflict',
+                'description' => 'cek profile failed!',
                 'exception' => $e
             ], 409);
         }
