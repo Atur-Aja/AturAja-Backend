@@ -1,14 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="ad3f4c9a-f3c8-47d1-95d1-0157b31ef076" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" afterDir="false" />
-<<<<<<< HEAD
-=======
-      <change beforePath="$PROJECT_DIR$/routes/api.php" beforeDir="false" afterPath="$PROJECT_DIR$/routes/api.php" afterDir="false" />
->>>>>>> rifki/cors
-    </list>
+    <list default="true" id="c823bd31-546a-4410-9085-09f5e0c3a34a" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -148,6 +141,7 @@
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
+    <property name="ASKED_ADD_EXTERNAL_FILES" value="true" />
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -171,7 +165,7 @@
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="ad3f4c9a-f3c8-47d1-95d1-0157b31ef076" name="Changes" comment="" />
+      <changelist id="c823bd31-546a-4410-9085-09f5e0c3a34a" name="Changes" comment="" />
       <created>1634995437521</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -212,6 +206,10 @@
       <workItem from="1638541199412" duration="2056000" />
       <workItem from="1638782837942" duration="15355000" />
       <workItem from="1638847275587" duration="2242000" />
+      <workItem from="1638945282093" duration="4573000" />
+      <workItem from="1639104523372" duration="30000" />
+      <workItem from="1639748055930" duration="7536000" />
+      <workItem from="1639758206979" duration="669000" />
     </task>
     <servers />
   </component>
@@ -246,5 +244,8 @@
       </map>
     </option>
     <option name="oldMeFiltersMigrated" value="true" />
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="ADD_EXTERNAL_FILES_SILENTLY" value="true" />
   </component>
 </project>
