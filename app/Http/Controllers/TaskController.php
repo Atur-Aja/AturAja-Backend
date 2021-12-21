@@ -72,6 +72,7 @@ class TaskController extends Controller
                 'description' => $request->description,
                 'date' => $request->date,
                 'time' => $request->time,
+                'status' => false,
                 'priority' => $request->priority,
             ]);
 
