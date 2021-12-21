@@ -41,15 +41,20 @@ class ResetPasswordNotification extends Notification
      */
     public function toMail($notifiable)
     {
-        $url = url(config('app.url') . route('password.reset', [
-                'token' => $this->token,
-                'email' => $notifiable->getEmailForPasswordReset(),
-            ], false));
+        // $url = url(config('app.url') . route('password.reset', [
+        //         'token' => $this->token,
+        //         'email' => $notifiable->getEmailForPasswordReset(),
+        //     ], false));
+
+        $url = url('http://localhost:3000' . route('password.reset', [
+            'token' => $this->token,
+            'email' => $notifiable->getEmailForPasswordReset(),
+        ], false));
 
         return (new MailMessage)
-                    ->line('The introduction to the notification.')
-                    ->action('Notification Action', $url)
-                    ->line('Thank you for using our application!');
+                    ->line('Berikut ini adalah tautan pengaturan ulang kata sandi akun Anda.')
+                    ->action('Atur Ulang Kata Sandi', $url)
+                    ->line('Jika anda tidak meminta pengaturan ulang kata sandi, Anda tidak perlu melakukan apapun');
     }
 
     /**

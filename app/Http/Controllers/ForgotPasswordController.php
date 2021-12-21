@@ -21,7 +21,7 @@ class ForgotPasswordController extends Controller
     public function reset(){
         $credentials = request()->validate([
             'email' => 'required|email',
-            'password' => ['required', 'min:8', 'confirmed', new isValidPassword()],
+            'password' => ['required', new isValidPassword(), 'confirmed'],
             'token' => 'required|string'
         ]);
 
@@ -37,7 +37,7 @@ class ForgotPasswordController extends Controller
         }
 
         return response()->json([
-            'message' => 'Success reset password'
+            'message' => 'Reset password success'
         ], 200);
     }
 }
