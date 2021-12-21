@@ -46,7 +46,7 @@ class ResetPasswordNotification extends Notification
         //         'email' => $notifiable->getEmailForPasswordReset(),
         //     ], false));
 
-        $url = url('http://localhost:3000' . route('password.reset', [
+        $url = url(env('FRONTEND_URL', 'http://localhost:3000') . route('password.reset', [
             'token' => $this->token,
             'email' => $notifiable->getEmailForPasswordReset(),
         ], false));

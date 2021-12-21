@@ -10,8 +10,7 @@ use Illuminate\Http\Request;
 class VerificationController extends Controller
 {
     public function verify(Request $request, $id)
-    {
-        // dd($request, $id);
+    {        
         // auth()->loginUsingId($id);
         // $user = $request->user();
 
@@ -20,9 +19,7 @@ class VerificationController extends Controller
         if(!$request->hasValidSignature()) {
             return response()->json([
                 'message' => 'Invalid Email Verification URL'
-            ], 400);
-            // dd('gagal');
-            // return redirect('https://www.google.com/');
+            ], 400);            
         }
 
         if(!$user->hasVerifiedEmail()) {
@@ -38,9 +35,7 @@ class VerificationController extends Controller
 
 //        return redirect($this->redirectPath())->with('verified', true);
 
-        // return response()->json(['message' => 'Email Verificaton Complate'], 201);
-        // dd('success');
-        return redirect('https://www.google.com/');
+        return redirect(env('FRONTEND_URL', 'http://localhost:3000') . '/login');
     }
 
     public function resendEmail(Request $request)
