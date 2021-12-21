@@ -31,13 +31,21 @@ class TaskController extends Controller
     public function getUserTask()
     {
         $user = $this->getAuthUser();
-        $task = $user->tasks()->orderBy('date')->get();
-        if (count($task)==0) {
+        $tasks = $user->tasks()->orderBy('date')->get();
+        foreach ($tasks as $task) {
+            if (1 == 1) {
+                $taskes[] = $task;
+            }
+        }
+        if (count($taskes)==0) {
             return response()->json([
                 "message" => "no tasks"
               ], 200);
         } else {
-            foreach ($task as $task) {
+            $priority = array_column($taskes, 'priority');
+            array_multisort($priority, SORT_DESC, $taskes);
+
+            foreach ($taskes as $task) {
                 $member = Task::find($task->id)->users()->get(['users.id', 'users.username', 'users.photo']);
                 if (count($member)==1) {
                     $member = null;
