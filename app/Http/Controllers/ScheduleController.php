@@ -16,12 +16,12 @@ class ScheduleController extends Controller
 {
     use AuthUserTrait;
     use TimeBlockTrait;
-    
+
     public function __construct()
     {
         $this->middleware('jwt.verify');
     }
-    
+
     public function index()
     {
         return response()->json([
@@ -34,29 +34,29 @@ class ScheduleController extends Controller
         // Get Auth User
         $user = $this->getAuthUser();
         $userId = $user->id;
-        
+
         // Validate Request
-        $this->ValidateRequest();        
+        $this->ValidateRequest();
 
         // Create Schedule
         try {
             $schedule = $this->createSchedule($request, $request->date, $userId);
-            $date = $schedule->date;                        
-            
-            if(strcmp(request('repeat'), 'daily') == 0){                               
+            $date = $schedule->date;
+
+            if(strcmp(request('repeat'), 'daily') == 0){
                 for ($x = 0; $x < 7; $x++) {
                     $date = date('Y-m-d', strtotime($schedule->date . ' +1 day'));
-                    $schedule = $this->createSchedule($request, $date, $userId);                    
-                }               
-            }else if(strcmp(request('repeat'), 'weekly') == 0){              
+                    $schedule = $this->createSchedule($request, $date, $userId);
+                }
+            }else if(strcmp(request('repeat'), 'weekly') == 0){
                 for ($x = 0; $x < 4; $x++) {
                     $date = date('Y-m-d', strtotime($schedule->date . ' +1 week'));
-                    $schedule = $this->createSchedule($request, $date, $userId);                    
+                    $schedule = $this->createSchedule($request, $date, $userId);
                 }
-            }else if(strcmp(request('repeat'), 'monthly') == 0){                
+            }else if(strcmp(request('repeat'), 'monthly') == 0){
                 for ($x = 0; $x < 6; $x++) {
                     $date = date('Y-m-d', strtotime($schedule->date . ' +1 month'));
-                    $schedule = $this->createSchedule($request, $date, $userId);                    
+                    $schedule = $this->createSchedule($request, $date, $userId);
                 }
             }
 
@@ -76,7 +76,7 @@ class ScheduleController extends Controller
     {
         // Get Auth User
         $user = $this->getAuthUser();
-        
+
         try {
             $schedule = $user->schedules()->get()->where('id', $id)->first();
 
@@ -99,9 +99,9 @@ class ScheduleController extends Controller
     {
         // Get Auth User
         $user = $this->getAuthUser();
-        
+
         // Validate Request
-        $this->ValidateRequest();        
+        $this->ValidateRequest();
 
         // Update Schedule
         try {
@@ -113,7 +113,7 @@ class ScheduleController extends Controller
             }
 
             $this->store($request);
-            $this->destroy($schedule->id);            
+            $this->destroy($schedule->id);
 
             return response()->json([
                 'message' => 'schedule updated successfully'
@@ -144,11 +144,11 @@ class ScheduleController extends Controller
                         ->where('schedules.repeat', $schedule->repeat)
                         ->where('schedules.updated_at', $schedule->updated_at)
                         ->get(['schedules.id']);
-            
+
             foreach ($schedules as $schedule){
                 $schedule->users()->detach();
                 $schedule->delete();
-            }           
+            }
 
             return response()->json([
                 'message' => 'schedule deleted successfully',
@@ -165,9 +165,9 @@ class ScheduleController extends Controller
         $user = $this->getAuthUser();
 
         // Validate Request
-        $validator = Validator::make(request()->all(), [            
+        $validator = Validator::make(request()->all(), [
             'date' => 'required|date_format:Y-m-d',
-            'start_time' => 'required|date_format:H:i',            
+            'start_time' => 'required|date_format:H:i',
             'end_time' => 'required|date_format:H:i|after:start_time',
             'friends' => 'required',
         ]);
@@ -182,7 +182,7 @@ class ScheduleController extends Controller
         // Check Participant exist or not
         foreach($members as $memberId){
             try {
-                $member = User::findOrFail($memberId);                             
+                $member = User::findOrFail($memberId);
             } catch (ModelNotFoundException $e) {
                 return response()->json([
                     'message' => 'user not found',
@@ -192,27 +192,27 @@ class ScheduleController extends Controller
         }
 
         // Extract Request Body
-        
+
         $startTime = $this->stringToTimeBlock($request->start_time, 15, "bawah");
         $endTime = $this->stringToTimeBlock($request->end_time, 15, "atas");
-        
+
         $allFreeTimes = [];
 
         // Get Free Times on the date
-        $scheduleArray = $this->getScheduleArray($members, $request->date);     
+        $scheduleArray = $this->getScheduleArray($members, $request->date);
         $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
         foreach($freeTimes as $freeTime){
             array_unshift($freeTime , $request->date);
             array_push($allFreeTimes, $freeTime);
         }
 
-        // If no free times, get free times on another date        
+        // If no free times, get free times on another date
         for ($i=1; $i<=3; $i++) {
             if(count($allFreeTimes)<3){
                 $date = $request->date . ' +'. $i . ' day';
                 $date = date('Y-m-d', strtotime($date));
                 // $scheduleArray = null;
-                $scheduleArray = $this->getScheduleArray($members, $date);     
+                $scheduleArray = $this->getScheduleArray($members, $date);
                 $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
                 foreach($freeTimes as $freeTime){
                     array_unshift($freeTime, $date);
@@ -224,18 +224,18 @@ class ScheduleController extends Controller
                 $date = $request->date . ' -'. $i . ' day';
                 $date = date('Y-m-d', strtotime($date));
                 // $scheduleArray = null;
-                $scheduleArray = $this->getScheduleArray($members, $date);     
+                $scheduleArray = $this->getScheduleArray($members, $date);
                 $freeTimes = $this->getFreeTimes($scheduleArray, $startTime, $endTime);
                 foreach($freeTimes as $freeTime){
                     array_unshift($freeTime, $date);
                     array_push($allFreeTimes, $freeTime);
-                }                
-            }            
-        }          
+                }
+            }
+        }
 
         // convert timeBlock to string
         $rekomendasi = [];
-        
+
         for ($i=0; $i<3; $i++) {
             $date = $allFreeTimes[$i][0];
             $startTime = $this->timeBlockToString($allFreeTimes[$i][1], 15);
@@ -246,7 +246,7 @@ class ScheduleController extends Controller
         return response()->json([
             "rekomendasi" => $rekomendasi,
         ], 200);
-    }    
+    }
 
     public function getUserSchedule(Request $request){
         // Get Auth User
@@ -260,9 +260,7 @@ class ScheduleController extends Controller
         } else {
             foreach ($schedules as $schedule) {
                 $member = Schedule::find($schedule->id)->users()->get(['users.id', 'users.username', 'users.photo']);
-                if (count($member)==1) {
-                    $member = null;
-                }
+
                 $schedulesColab[] = ["schedule" => $schedule, "member" => $member];
             }
 
@@ -310,5 +308,5 @@ class ScheduleController extends Controller
             response()->json($validator->messages())->send();
             exit;
         }
-    }    
+    }
 }
