@@ -31,7 +31,7 @@ class ForgotPasswordController extends Controller
         // Validate Request
         $validator = Validator::make(request()->all(), [            
             'email' => 'required|email|exists:App\Models\User,email',
-            'password' => ['required', new isValidPassword(), 'confirmed'],
+            'password' => ['required', 'min:8', 'confirmed'],
             'token' => 'required|string'
         ]);
 

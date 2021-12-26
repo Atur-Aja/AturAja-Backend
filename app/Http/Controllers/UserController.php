@@ -36,6 +36,8 @@ class UserController extends Controller
 
         // Get User Friends
         $friends = $user->friends()->where('friends.status', 'accepted')->get(['username']);
+        $invitedUsers = $user->friends()->where('friends.status', 'requested')->get(['username']);
+        
 
         $username = $request->username;
         $users = User::where('username', 'like', '%'.$username."%")
@@ -43,10 +45,17 @@ class UserController extends Controller
                     ->whereNotIn('username', $friends)
                     ->get(['id','username', 'photo']);
 
-        foreach ($users as $user) {
-            $user_photo = $user->photo;
-            $user->link = Storage::url($user_photo);
+        foreach ($users as $user) {            
+            $user->link = Storage::url($user->photo);
+            foreach ($invitedUsers as $invitedUser) {
+                if(strcmp($user->username, $invitedUser->username) == 0){
+                    $user->invited = 'true';
+                }
             }
+            if(strcmp($user->invited, 'true') != 0){
+                $user->invited = 'false';
+            }            
+        }
 
         return $users;
     }

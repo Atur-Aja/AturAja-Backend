@@ -21,7 +21,7 @@ class AuthController extends Controller
         $this->validate($request, [
             'username' => ['required', 'min:4', 'max:16', 'alpha_dash', 'unique:users'],
             'email' => ['required', 'email', 'unique:users'],
-            'password' => ['required', 'min:8', 'same:password_validate', new isValidPassword()],
+            'password' => ['required', 'min:8', 'same:password_validate'],
             'password_validate' => ['required'],
         ]);
 
