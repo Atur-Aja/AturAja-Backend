@@ -12,6 +12,11 @@ use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('jwt.verify');
+    }
+
     public function sortTas(Request $request)
     {
         try {

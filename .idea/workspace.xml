@@ -2,7 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="c823bd31-546a-4410-9085-09f5e0c3a34a" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/public/image/Susi.jpg" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/DashboardController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Controllers/PhotoController.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Controllers/PhotoController.php" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/app/Http/Kernel.php" beforeDir="false" afterPath="$PROJECT_DIR$/app/Http/Kernel.php" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -147,7 +151,7 @@
     <property name="RunOnceActivity.OpenProjectViewOnStart" value="true" />
     <property name="RunOnceActivity.ShowReadmeOnStart" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../Deployment/deployment/Docker/src/AturAja-Backend" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="vue.rearranger.settings.migration" value="true" />
   </component>
@@ -215,6 +219,13 @@
       <workItem from="1640191125765" duration="405000" />
       <workItem from="1640196687937" duration="4077000" />
       <workItem from="1640364502102" duration="865000" />
+      <workItem from="1640428481632" duration="334000" />
+      <workItem from="1640447004887" duration="3286000" />
+      <workItem from="1640452063292" duration="628000" />
+      <workItem from="1640873639390" duration="749000" />
+      <workItem from="1640883833671" duration="721000" />
+      <workItem from="1640885518764" duration="21000" />
+      <workItem from="1640890791330" duration="419000" />
     </task>
     <servers />
   </component>
@@ -237,7 +248,7 @@
                   <entry key="branch">
                     <value>
                       <list>
-                        <option value="rifki/email-verification" />
+                        <option value="origin/main" />
                       </list>
                     </value>
                   </entry>
