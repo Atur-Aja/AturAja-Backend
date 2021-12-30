@@ -42,6 +42,7 @@ Route::get('cekPhoto', 'DashboardController@cekPhoto');
 
 Route::group(['prefix' => 'user'], function ($router) {
     Route::get('/search', 'UserController@searchUser');
+    Route::get('/cek', 'HelperController@cekUser');
     Route::get('/{username}/profile', 'UserController@profile');
     Route::post('/profile', 'UserController@setup');
 
