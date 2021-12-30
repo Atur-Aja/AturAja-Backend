@@ -49,11 +49,11 @@ class UserController extends Controller
             $user->link = Storage::url($user->photo);
             foreach ($invitedUsers as $invitedUser) {
                 if(strcmp($user->username, $invitedUser->username) == 0){
-                    $user->invited = 'true';
+                    $user->invited = true;
                 }
             }
-            if(strcmp($user->invited, 'true') != 0){
-                $user->invited = 'false';
+            if(strcmp($user->invited, true) != 0){
+                $user->invited = false;
             }            
         }
 

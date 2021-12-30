@@ -20,11 +20,11 @@ class HelperController extends Controller
 
         if(User::where('username', '=', $request->username)->exists()){
             return response()->json([
-                'isAvailable' => 'false',
+                'isAvailable' => false,
             ], 200);
         }else{
             return response()->json([
-                'isAvailable' => 'true',
+                'isAvailable' => true,
             ], 200);
         };
     }
