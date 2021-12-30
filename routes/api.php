@@ -26,6 +26,12 @@ Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('logout', 'AuthController@logout');
 });
 
+Route::get('email/verify/{id}', 'VerificationController@verify')->name('verification.verify');
+Route::post('email/resend', 'VerificationController@resendEmail')->name('verification.resend');
+
+Route::post('password/email', 'ForgotPasswordController@forgot');
+Route::post('password/reset', 'ForgotPasswordController@reset');
+
 Route::group(['prefix' => 'dashboard'], function ($router) {
     Route::post('task', 'DashboardController@sortTas');
     Route::post('schedule', 'DashboardController@sortSchedule');
@@ -67,12 +73,6 @@ Route::group(['prefix' => 'tasks'], function ($router) {
 Route::group(['prefix' => 'schedules'], function ($router) {
     Route::post('/update/{id}', 'UpdateScheduleController@perbarui');
 });
-
-Route::get('email/verify/{id}', 'VerificationController@verify')->name('verification.verify');
-Route::post('email/resend', 'VerificationController@resendEmail')->name('verification.resend');
-
-Route::post('password/email', 'ForgotPasswordController@forgot');
-Route::post('password/reset', 'ForgotPasswordController@reset');
 
 Route::apiResource('schedules', 'ScheduleController');
 Route::post('schedules/match', 'ScheduleController@matchSchedule');
