@@ -8,9 +8,12 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Rules\IsValidPassword;
+use App\Http\Traits\AuthUserTrait;
 
 class AuthController extends Controller
-{
+{    
+    use AuthUserTrait;
+    
     public function __construct()
     {
         $this->middleware('auth:api', ['except' => ['login', 'register']]);
@@ -42,28 +45,43 @@ class AuthController extends Controller
         }
     }
 
-    public function login()
+    public function login(Request $request)
     {
-        $loginField = request()->input('login');
-        $credentials = null;
+        // Validate Request
+        $this->validate($request, [
+            'login' => ['required'],
+            'password' => ['required'],
+        ]);
 
-        if ($loginField !== null) {
-            $loginType = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
-            request()->merge([ $loginType => $loginField ]);
-            $credentials = request([ $loginType, 'password' ]);
-        } else {
+        $isEmailExist = User::where('email', '=', request()->input('login'))->exists();
+        $isUsernameExist = User::where('username', '=', request()->input('login'))->exists();
+
+        if($isEmailExist || $isUsernameExist){
+            $loginField = request()->input('login');
+            $credentials = null;
+
+            if ($loginField !== null) {
+                $loginType = filter_var($loginField, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+                request()->merge([ $loginType => $loginField ]);
+                $credentials = request([ $loginType, 'password' ]);
+            } else {
+                return response()->json([
+                    'message' => 'please log in using email / username'
+                ], 401);
+            }
+
+            if (!$token = auth()->attempt($credentials)) {
+                return response()->json([
+                    'message' => 'password incorrect'
+                ], 401);
+            }
+
+            return $this->respondWithToken($token);
+        }else{
             return response()->json([
-                'message' => 'please log in using email / username'
+                'message' => 'email / username invalid'
             ], 401);
-        }
-
-        if (!$token = auth()->attempt($credentials)) {
-            return response()->json([
-                'message' => 'email / username / password incorrect'
-            ], 401);
-        }
-
-        return $this->respondWithToken($token);
+        }        
     }
 
     public function refresh()
@@ -78,6 +96,48 @@ class AuthController extends Controller
         return response()->json([
             'message' => 'successfully logged out'
         ], 200);
+    }
+
+    public function changeEmail(Request $request)
+    {
+        // Get Auth user
+        $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->validate($request, [
+            'email' => ['required', 'email', 'unique:users']
+        ]);
+        
+        // Update Email
+        $user->email = $request->email;
+        $user->email_verified_at = null;
+        $user->save();
+
+        // Verify new email
+        $user->sendEmailVerificationNotification();        
+        
+        return response()->json([
+            'message' => 'Please check your email to verify your new email.'
+        ], 201);        
+    }
+
+    public function changePassword(Request $request){
+        // Get Auth user
+        $user = $this->getAuthUser();
+        
+        // Validate Request
+        $this->validate($request, [
+            'password' => ['required', 'min:8', 'same:password_validate'],
+            'password_validate' => ['required'],
+        ]);
+
+        // Update Password
+        $user->password = app('hash')->make($request->password);
+        $user->save();
+
+        return response()->json([
+            'message' => 'password successfully changed'
+        ], 201);
     }
 
     protected function respondWithToken($token)

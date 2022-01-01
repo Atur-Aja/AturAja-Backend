@@ -47,7 +47,7 @@ class VerifyEmailNotification extends Notification
             ->subject(Lang::get('Verify Email Address'))
             ->line(Lang::get('Silakan klik tombol di bawah ini untuk memverifikasi alamat email Anda.'))
             ->action(Lang::get('Verfikasi Alamat Email'), $verificationUrl)
-            ->line(Lang::get('Jika Anda tidak membuat akun, tidak diperlukan tindakan lebih lanjut.'));
+            ->line(Lang::get('Jika Anda tidak membuat akun / tidak meminta perubahan email, tidak diperlukan tindakan lebih lanjut.'));
     }
 
     /**

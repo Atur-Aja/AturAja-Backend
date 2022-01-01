@@ -24,6 +24,9 @@ Route::group(['prefix' => 'auth'], function ($router) {
     Route::post('login', 'AuthController@login')->middleware('checkuserisactive');
     Route::post('refresh', 'AuthController@refresh');
     Route::post('logout', 'AuthController@logout');
+
+    Route::post('change-email', 'AuthController@changeEmail');
+    Route::post('change-password', 'AuthController@changePassword');
 });
 
 Route::get('email/verify/{id}', 'VerificationController@verify')->name('verification.verify');
