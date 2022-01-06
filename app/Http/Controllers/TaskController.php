@@ -170,7 +170,7 @@ class TaskController extends Controller
 
             if (!empty($task)) {
                 $task->todos()->where('task_id', $id)->delete();
-                $user->tasks()->detach($id);
+                $user->tasks()->detach();
                 $task->delete();
                 return response()->json([
                     "message" => "records deleted"
